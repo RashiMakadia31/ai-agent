@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Basic meta tags -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat UI with Upload</title>
+  <!-- Redirect to login if not logged in -->
+  <script>
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
+  <!-- Fonts and icon libraries -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- External scripts for markdown rendering, syntax highlighting, and code editor -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script>
+    // Automatically highlight all code on page load
+    document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());
+  </script>
+</head>
+<body>
+
+  <!-- Button to toggle light/dark theme -->
+  <button class="theme-toggle" id="theme-toggle" title="Toggle light & dark" aria-label="auto" aria-live="polite">
+    <svg class="sun-and-moon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
+      <!-- Moon mask for sun/moon toggle effect -->
+      <mask class="moon" id="moon-mask">
+        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+        <circle cx="24" cy="10" r="6" fill="black" />
+      </mask>
+      <circle class="sun" cx="12" cy="12" r="6" mask="url(#moon-mask)" fill="currentColor" />
+      <g class="sun-beams" stroke="currentColor">
+        <!-- Sun beams for visual effect -->
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </g>
+    </svg>
+  </button>
+
+  <!-- Toggle switches for VSCode and MySQL modes -->
+  <div class="toggle-switches">
+    <label class="switch">
+      <input type="checkbox" id="vscode-toggle">
+      <span class="slider-round"></span>
+      <img src="images/vscode.png" class="switch-icon" alt="VS Code Icon">
+    </label>
+    <label class="switch">
+      <input type="checkbox" id="mysql-toggle">
+      <span class="slider-round"></span>
+      <img src="images/sql.png" class="switch-icon mysql-icon" alt="MySQL Icon">
+    </label>
+  </div>
+
+  <!-- Sidebar for chat history -->
+  <div class="hamburger">☰</div>
+  <div class="sidebar" id="sidebar">
+    <h3>Chat History</h3>
+    <div id="chatTabs"></div>
+  </div>
+
+  <!-- Main wrapper for chat and controls -->
+  <div class="main-wrapper">
+    <div class="center-wrapper">
+      <!-- Welcome heading -->
+      <h1 class="greeting">Welcome, Yash</h1>
+
+      <!-- Language selector (Python, SQL, PySpark) -->
+      <div class="segmented-control">
+        <input type="radio" name="language" id="lang-python" value="Python" checked>
+        <label for="lang-python">Python</label>
+        <input type="radio" name="language" id="lang-sql" value="SQL">
+        <label for="lang-sql">SQL</label>
+        <input type="radio" name="language" id="lang-pyspark" value="PySpark">
+        <label for="lang-pyspark">PySpark</label>
+        <div class="slider"></div>
+      </div>
+
+      <!-- Chat container for messages, typing indicator, and input -->
+      <div class="chat-container">
+        <div class="messages" id="messages"></div>
+
+        <!-- Typing animation -->
+        <div class="typing-indicator" id="typingIndicator" style="display: none;">
+          <span></span><span></span><span></span>
+        </div>
+
+        <!-- Input field and buttons -->
+        <div class="input-wrapper">
+          <input type="text" id="chatInput" placeholder="Ask follow-up..." />
+          <label for="fileUpload" class="icon-btn"><i class="fa-solid fa-paperclip"></i></label>
+          <input type="file" id="fileUpload" style="display: none;" onchange="handleFileUpload(event)" />
+          <button class="icon-btn" onclick="toggleCodeEditor()"><i class="fa-solid fa-code"></i></button>
+          <button class="icon-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code editor modal window -->
+  <div class="code-editor-modal" id="codeEditorModal">
+    <div class="code-editor-header">
+      <span>Code Editor</span>
+      <div class="editor-actions">
+        <button onclick="minimizeEditor()">−</button>
+        <button onclick="maximizeEditor()">☐</button>
+        <button onclick="toggleCodeEditor()">×</button>
+      </div>
+    </div>
+
+    <!-- Prompt input for the code editor -->
+    <input class="prompt-input" id="promptBox" placeholder="PROMPT" />
+
+    <!-- Code editor split view: input + output -->
+    <div class="editor-code-container">
+      <div style="position: relative; flex: 1;">
+        <div id="inputEditor"></div>
+        <div class="input-buttons">
+          <button class="run-icon-btn" onclick="sendEditorCode()" title="Run Code">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="copy-btn" onclick="copyInputMonaco()" title="Copy Input">
+            <i class="fa-solid fa-copy"></i>
+          </button>
+        </div>
+      </div>
+      <div style="position: relative; flex: 1;">
+        <div id="outputEditor"></div>
+        <div class="output-buttons">
+          <button class="copy-btn" onclick="copyOutputMonaco()" title="Copy Output">
+            <i class="fa-solid fa-copy"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JS script -->
+  <script src="js/script.js"></script>
+</body>
+</html>

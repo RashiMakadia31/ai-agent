@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <style>
+    *, ::after, ::before {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #212121;
+      color: #fff;
+      font-family: monospace, serif;
+      letter-spacing: 0.05em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .form {
+      width: 300px;
+      padding: 40px 15px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 23px;
+      margin-bottom: 32px;
+      background: linear-gradient(-45deg, #6a5acd, #e66465, #8a2be2, #e66465);
+      background-size: 400% 400%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientMove 5s ease infinite;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .control {
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .control input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font-family: monospace, serif;
+      letter-spacing: 0.05em;
+      font-size: 16px;
+      z-index: 2;
+      position: relative;
+    }
+
+    .control input:focus {
+      outline: none;
+    }
+
+    .btn {
+      width: 100%;
+      display: block;
+      padding: 14px 16px;
+      background: transparent;
+      outline: none;
+      border: 0;
+      color: #fff;
+      letter-spacing: 0.1em;
+      font-weight: bold;
+      font-family: monospace;
+      font-size: 16px;
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    .block-cube {
+      position: relative;
+    }
+
+    .block-cube .bg-top,
+    .block-cube .bg,
+    .block-cube .bg-right {
+      position: absolute;
+      transition: background 0.2s ease-in-out;
+    }
+
+    .block-cube .bg-top {
+      height: 10px;
+      background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(52,9,121,1) 37%, rgba(0,212,255,1) 94%);
+      bottom: 100%;
+      left: 5px;
+      right: -5px;
+      transform: skew(-45deg, 0);
+    }
+
+    .block-cube .bg-right {
+      background: rgba(0,212,255,1);
+      top: -5px;
+      bottom: 5px;
+      width: 10px;
+      left: 100%;
+      transform: skew(0, -45deg);
+    }
+
+    .block-cube .bg {
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(52,9,121,1) 37%, rgba(0,212,255,1) 94%);
+    }
+
+    .block-cube .bg-inner {
+      background: #212121;
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      right: 2px;
+      bottom: 2px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .block-cube .text {
+      position: relative;
+      z-index: 2;
+    }
+
+    .block-input input:focus ~ .bg-right .bg-inner,
+    .block-input input:focus ~ .bg-top .bg-inner,
+    .block-input input:focus ~ .bg .bg-inner {
+      top: 100%;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .block-input .bg-top,
+    .block-input .bg-right,
+    .block-input .bg {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .block-input:hover .bg-top,
+    .block-input:hover .bg-right,
+    .block-input:hover .bg {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .block-cube-hover:hover .bg-inner,
+    .block-cube-hover:focus .bg-inner {
+      top: 100%;
+    }
+
+    /* ✅ Mobile-Friendly Styles */
+    @media screen and (max-width: 600px) {
+      .form {
+        width: 90%;
+        padding: 20px 10px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .control input, .btn {
+        font-size: 15px;
+        padding: 12px;
+      }
+
+      .btn {
+        font-size: 15px;
+        letter-spacing: 0.05em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <form class="form" action="/login/" method="POST" autocomplete="off">
+  <div class="control">
+    <h1>LOGIN</h1>
+    {% if message %}
+      <p style="color: red;">{{ message }}</p>
+    {% endif %}
+  </div>
+
+  <div class="control block-cube block-input">
+    <input type="text" name="username" placeholder="Username" required />
+    <div class="bg-top"><div class="bg-inner"></div></div>
+    <div class="bg-right"><div class="bg-inner"></div></div>
+    <div class="bg"><div class="bg-inner"></div></div>
+  </div>
+
+  <div class="control block-cube block-input">
+    <input type="password" name="password" placeholder="Password" required />
+    <div class="bg-top"><div class="bg-inner"></div></div>
+    <div class="bg-right"><div class="bg-inner"></div></div>
+    <div class="bg"><div class="bg-inner"></div></div>
+  </div>
+
+  <button type="submit" class="btn block-cube block-cube-hover">
+    <div class="bg-top"><div class="bg-inner"></div></div>
+    <div class="bg-right"><div class="bg-inner"></div></div>
+    <div class="bg"><div class="bg-inner"></div></div>
+    <div class="text">ENTER</div>
+  </button>
+
+  <p style="margin-top: 16px;">Don't have an account? <a href="/register/">Register</a></p>
+</form>
+ 
+</body>
+</html>

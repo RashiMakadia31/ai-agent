@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VSCode + MySQL Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #1e1e1e;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 24px;
+      background: linear-gradient(45deg, #6a5acd, #00c3ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientMove 5s ease infinite;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .input-container {
+      background: #2c2c2c;
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      border: none;
+      resize: vertical;
+      background: #1e1e1e;
+      color: white;
+      padding: 14px;
+      font-size: 14px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+    }
+
+    button {
+      margin-top: 12px;
+      background-color: #007aff;
+      color: white;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #005fd0;
+    }
+
+    .output {
+      margin-top: 30px;
+      background: #111;
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      color: #f0f0f0;
+      border: 1px solid #444;
+    }
+
+    .note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #999;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 VSCode + MySQL Assistant</h1>
+  <div class="input-container">
+    <textarea id="queryInput" placeholder="Ask anything code or database related..."></textarea>
+    <button onclick="sendQuery()">Ask Assistant</button>
+  </div>
+  <div class="output" id="assistantResponse">Waiting for input...</div>
+  <div class="note">Make sure your FastAPI backend is running on <code>http://localhost:8000</code></div>
+
+  <script src="extension_ui.js"></script>
+</body>
+</html>
