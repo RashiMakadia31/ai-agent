@@ -1,0 +1,918 @@
+/* ==================== CSS VARIABLES ==================== */
+/* Define default (dark theme) colors */
+:root {
+  --bg-color: #1e1e1e; /* Background color */
+  --text-color: white; /* Text color */
+  --container-bg: rgba(40, 40, 40, 0.7); /* Semi-transparent container background */
+  --message-user-bg: #4a90e2; /* User message bubble background */
+  --message-bot-bg: #2f2f2f; /* Bot message bubble background */
+  --input-bg: rgba(50, 50, 50, 0.8); /* Input fields background */
+  --border-color: #444; /* General border color */
+  --indicator-color: #aaa; /* Typing indicator color */
+}
+/* Light theme overrides for CSS variables */
+body.light-theme {
+  --bg-color: #f5f5f5;
+  --text-color: #111;
+  --container-bg: rgba(255, 255, 255, 0.9);
+  --message-user-bg: #007aff;
+  --message-bot-bg: #e0e0e0;
+  --input-bg: rgba(240, 240, 240, 0.8);
+  --border-color: #ccc;
+  --indicator-color: #555;
+  --segmented-label-color: #555;
+  --segmented-slider-bg: #333;
+}
+/* ==================== GLOBAL BODY ==================== */
+/* General body styling */
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-color);
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+/* Center wrapper for main content */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* ==================== THEME TOGGLE ==================== */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-color);
+  z-index: 1000; /* Ensure it stays above other elements */
+}
+.theme-toggle svg {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.theme-toggle:hover svg {
+  transform: rotate(20deg); /* Rotate slightly on hover for interaction */
+}
+/* ==================== TOGGLE SWITCHES ==================== */
+.toggle-switches {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1000;
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 140px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: white;
+}
+
+.switch-icon {
+  height: 20px;
+  width: 20px;
+  object-fit: contain;
+  filter: brightness(1.1); /* Slightly brighter icon */
+}
+
+.mysql-icon {
+  height: 32px;
+  width: auto;
+  transform: translateY(1px); /* Align vertically with text */
+}
+
+.switch input {
+  opacity: 0; /* Hide the actual checkbox */
+  width: 0;
+  height: 0;
+}
+
+.slider-round {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  background-color: #ccc;
+  border-radius: 999px; /* Pill-shaped slider */
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.slider-round::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* When toggle is checked, change slider appearance */
+input:checked + .slider-round {
+  background-color: #4caf50;
+}
+
+input:checked + .slider-round::before {
+  transform: translateX(22px);
+}
+/* ==================== SIDEBAR ==================== */
+.hamburger {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px; /* Hidden by default */
+  width: 240px;
+  height: 100%;
+  background-color: var(--container-bg);
+  padding: 30px 20px 20px 20px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.4);
+  transition: left 0.3s ease;
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  left: 0; /* Slide in when open */
+}
+
+.sidebar h3 {
+  color: var(--text-color);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 60px 0 16px 0;
+}
+
+.sidebar .chat-tab {
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: var(--input-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.sidebar .chat-tab:hover {
+  background: var(--message-user-bg);
+  color: white;
+}
+
+.chat-tab-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--input-bg);
+  border-radius: 8px;
+  margin: 6px 0;
+  padding: 6px 10px;
+}
+
+.chat-delete-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.chat-delete-btn:hover {
+  color: red; /* Warn user on hover */
+}
+/* ==================== MAIN CENTER ==================== */
+.center-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.greeting {
+  font-size: 2.8rem;
+  font-weight: 600;
+  background: linear-gradient(-45deg, #6a5acd, #e66465, #8a2be2, #e66465);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMove 5s ease infinite;
+  margin-bottom: 14px;
+}
+/* ==================== SEGMENTED CONTROL ==================== */
+.segmented-control {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 260px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid white;
+  border-radius: 999px;
+  padding: 6px;
+  margin: 20px auto 14px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.segmented-control input {
+  display: none; /* Hide actual radio buttons */
+}
+
+.segmented-control label {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  cursor: pointer;
+  z-index: 2;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.segmented-control .slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(100% / 3 - 8px);
+  height: calc(100% - 8px);
+  background: white;
+  border-radius: 999px;
+  transition: left 0.3s ease;
+  z-index: 1;
+}
+
+/* Slider positions based on selected input */
+#lang-python:checked ~ .slider { left: 4px; }
+#lang-sql:checked ~ .slider { left: calc(33.333% + 4px); }
+#lang-pyspark:checked ~ .slider { left: calc(66.666% + 4px); }
+/* Highlight selected label */
+#lang-python:checked + label,
+#lang-sql:checked + label,
+#lang-pyspark:checked + label {
+  color: black;
+}
+
+/* Wrapper for chat area including messages and input box */
+.chat-container {
+  display: flex;                /* Flexbox layout for vertical stacking */
+  flex-direction: column;       /* Arrange children top-to-bottom */
+  justify-content: flex-start;  /* Align items at the top */
+  align-items: center;          /* Center items horizontally */
+  width: 100%;                  /* Full width of parent */
+}
+/* ===================== MESSAGES AREA ===================== */
+/* Scrollable container for chat messages */
+.messages {
+  max-height: 300px;            /* Limit height, enable scrolling if exceeded */
+  overflow-y: auto;             /* Allow vertical scrolling */
+  width: 100%;                  /* Full width of chat container */
+  margin-bottom: 14px;          /* Space below messages area */
+  padding: 0 12px;              /* Horizontal padding for spacing */
+  display: flex;                /* Flex column to stack messages */
+  flex-direction: column;
+  align-items: center;          /* Center messages horizontally */
+}
+/* Base style for individual message bubbles */
+.message {
+  display: flex;                /* Align message content (e.g. text + icons) horizontally */
+  gap: 6px;                     /* Space between elements inside message */
+  align-items: flex-start;       /* Align items to top */
+  padding: 8px 12px;            /* Inner padding for bubble content */
+  margin: 8px 0;                /* Vertical margin between messages */
+  border-radius: 14px;          /* Rounded corners for bubble */
+  max-width: 85%;               /* Prevent bubble from stretching too wide */
+  color: var(--text-color);     /* Text color based on theme */
+}
+/* Bot message style */
+.message.bot {
+  background: var(--message-bot-bg);    /* Bot bubble background color */
+  align-self: flex-start;               /* Align bot message to the left */
+  padding: 16px 20px;                   /* Slightly larger padding */
+  border-radius: 16px;                  /* More rounded corners */
+  max-width: 90%;                       /* Allow bot bubbles to be a bit wider */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);  /* Soft shadow for depth */
+}
+/* User message style */
+.message.user {
+  background: var(--message-user-bg);   /* User bubble background color */
+  align-self: flex-end;                 /* Align user message to the right */
+  padding: 14px 18px;                   /* Inner padding */
+  border-radius: 16px;                  /* Rounded corners */
+  max-width: 85%;                       /* Similar width limit as bot */
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);  /* Slightly lighter shadow */
+}
+/* Text inside message bubbles */
+.bubble-text {
+  line-height: 1.6;            /* Spacing between lines for readability */
+  word-break: break-word;      /* Ensure long words wrap and don't overflow */
+  font-size: 15px;             /* Standard text size */
+  padding: 0;                  /* No extra padding */
+  text-align: left;            /* Left-align text inside bubble */
+  width: 100%;                 /* Fill width of message container */
+}
+/* ===================== INPUT AREA ===================== */
+/* Wrapper for input field and buttons */
+.input-wrapper {
+  display: flex;               /* Arrange input + icons horizontally */
+  align-items: center;         /* Vertically center contents */
+  background: #2c2c2c;         /* Dark background for input */
+  border-radius: 999px;        /* Pill-shaped rounded corners */
+  padding: 12px 20px;          /* Inner spacing */
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle border */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);    /* Slight shadow for depth */
+  width: 100%;                 /* Full width up to max */
+  max-width: 720px;            /* Limit to readable width on large screens */
+}
+/* Text input field */
+.input-wrapper input[type="text"] {
+  flex: 1;                     /* Take remaining space in wrapper */
+  border: none;                /* Remove default border */
+  outline: none;               /* Remove default focus outline */
+  background: transparent;     /* No background so parent bg shows */
+  color: white;                /* White text color */
+  font-size: 15px;             /* Font size */
+  font-family: 'Poppins', sans-serif; /* Consistent font */
+  padding: 8px;                /* Inner padding */
+}
+/* ===================== ICON BUTTONS ===================== */
+/* Buttons for send, attach, code etc. inside input */
+.icon-btn {
+  background: transparent;     /* No background */
+  border: none;                /* Remove border */
+  color: white;                /* Icon color */
+  font-size: 16px;             /* Icon size */
+  padding: 6px;                /* Inner spacing for click area */
+  margin-left: 8px;            /* Space between icons */
+  cursor: pointer;             /* Pointer cursor on hover */
+  transition: transform 0.2s ease; /* Smooth scaling on hover */
+}
+/* Hover effect for icon buttons */
+.icon-btn:hover {
+  transform: scale(1.1);       /* Slightly enlarge icon on hover */
+}
+/* ===================== TYPING INDICATOR ===================== */
+/* Container for animated dots */
+.typing-indicator {
+  display: flex;               /* Arrange dots in a row */
+  gap: 4px;                    /* Space between dots */
+  padding: 10px;               /* Inner spacing */
+}
+/* Individual typing dots */
+.typing-indicator span {
+  width: 8px;                  /* Dot size */
+  height: 8px;
+  background: var(--indicator-color); /* Dot color based on theme */
+  border-radius: 50%;          /* Make dots circular */
+  animation: typingBounce 1.4s infinite ease-in-out; /* Bounce animation */
+}
+/* ================== KEYFRAMES ================== */
+/* Typing indicator dots bounce animation */
+@keyframes typingBounce {
+  0%, 80%, 100% {
+    transform: scale(0.9);  /* Slightly smaller size at start/end of cycle */
+    opacity: 0.5;           /* Semi-transparent at these points */
+  }
+  40% {
+    transform: scale(1.2);  /* Enlarge at midpoint */
+    opacity: 1;             /* Fully visible at peak */
+  }
+}
+/* Gradient background animation for text elements */
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }          /* Start gradient at left */
+  50% { background-position: 100% 50%; }       /* Move gradient to right */
+  100% { background-position: 0% 50%; }        /* Return gradient to left */
+}
+/* Gradient background animation for the code editor modal */
+@keyframes gradientBoxMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* ================== CODE EDITOR MODAL ================== */
+/* Base style for modal */
+.code-editor-modal {
+  position: fixed;                           /* Stays fixed on screen */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);          /* Center on screen */
+  width: 90%;
+  max-width: 680px;
+  height: auto;                              /* Dynamic height */
+  padding: 12px;
+  gap: 10px;                                /* Space between internal elements */
+  border-radius: 16px;                      /* Rounded corners */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Drop shadow */
+  background: linear-gradient(-45deg, #6a5acd, #e66465, #8a2be2, #e66465); /* Gradient background */
+  background-size: 400% 400%;               /* Larger bg size for smooth movement */
+  animation: gradientBoxMove 5s ease infinite; /* Apply animated gradient */
+  display: none;                            /* Hidden by default */
+  flex-direction: column;
+  z-index: 1001;                            /* Ensure on top of most elements */
+  resize: both;                             /* Allow manual resize */
+  transition: all 0.3s ease;                /* Smooth size/position changes */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* Show modal when visible class is applied */
+.code-editor-modal.visible {
+  display: flex !important;
+}
+/* Fullscreen modal state */
+.code-editor-modal.maximized {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  border-radius: 0;                          /* Remove rounding in maximized view */
+  box-shadow: none;                          /* Remove shadow for fullscreen */
+  z-index: 1002;                             /* Ensure it appears above everything */
+}
+/* Minimized modal state (collapsed view) */
+.code-editor-modal.minimized {
+  height: 48px !important;
+  width: 280px !important;
+  transform: translate(-50%, -50%) !important;
+  overflow: hidden;                          /* Hide contents */
+}
+/* Hide textarea when minimized */
+.code-editor-modal.minimized textarea {
+  display: none;
+}
+/* ================== MODAL HEADER ================== */
+/* Style for draggable/top bar of modal */
+.code-editor-header {
+  display: flex;                              /* Horizontal layout for title + actions */
+  justify-content: space-between;            /* Space between title and buttons */
+  align-items: center;
+  padding: 12px 20px;
+  background: #2a2a2a;                        /* Dark background for header */
+  color: white;
+  font-weight: 600;
+  border-bottom: 1px solid #444;              /* Subtle separator line */
+  border-radius: 8px 8px 0 0;                 /* Rounded top corners */
+  box-sizing: border-box;
+}
+/* ================== COPY BUTTON ================== */
+/* Style for copy code button inside editor */
+.copy-btn {
+  position: absolute;                        /* Positioned over editor */
+  bottom: 8px;
+  right: 8px;
+  background: #444;
+  color: white;
+  border: none;
+  padding: 4px 6px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 10;                               /* Ensure button stays above content */
+  transition: background 0.2s;               /* Smooth color change on hover */
+}
+
+.copy-btn:hover {
+  background: #666;                          /* Lighter background on hover */
+}
+/* ================== RUN BUTTON ================== */
+/* Style for code run/play button */
+.run-icon-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #4a90e2;                           /* Blue color for play icon */
+  font-size: 18px;
+  z-index: 10;
+}
+/* ================== RUN BUTTON HOVER ================== */
+/* Change color of run/play icon on hover for visual feedback */
+.run-icon-btn:hover {
+  color: #357ab7; /* Darker blue shade when hovered */
+}
+/* ================== EDITOR ACTIONS ================== */
+/* Container for modal action buttons (minimize, maximize, close) */
+.editor-actions {
+  display: flex;          /* Align buttons horizontally */
+  gap: 10px;              /* Space between each button */
+  align-items: center;    /* Vertically center buttons */
+}
+/* Style for individual editor action buttons */
+.editor-actions button {
+  background: none;                         /* No background by default */
+  border: none;                             /* Remove border */
+  color: white;                             /* White icon/text color */
+  font-size: 16px;                          /* Icon/text size */
+  cursor: pointer;                          /* Pointer cursor on hover */
+  padding: 0 6px;                           /* Horizontal padding for click area */
+  border-radius: 6px;                       /* Slightly rounded corners */
+  transition: transform 0.2s ease, background 0.2s ease; /* Smooth hover effects */
+}
+/* Hover effect for editor action buttons */
+.editor-actions button:hover {
+  transform: scale(1.2);                    /* Slightly enlarge icon on hover */
+  background: rgba(255, 255, 255, 0.1);     /* Subtle background highlight */
+}
+/* ================== PROMPT INPUT ================== */
+/* Style for the prompt input field above the code editor */
+.prompt-input {
+  width: 100%;                              /* Full width */
+  padding: 10px 14px;                       /* Inner spacing */
+  font-family: 'Poppins', sans-serif;       /* Consistent font */
+  font-size: 14px;                          /* Text size */
+  background: #2a2a2a;                      /* Dark background */
+  color: white;                             /* White text */
+  border: 1px solid #444;                   /* Subtle border */
+  border-radius: 12px;                      /* Rounded corners */
+  outline: none;                            /* Remove default outline */
+  box-sizing: border-box;                   /* Include padding in width */
+  margin: 0;                                /* Remove default margin */
+}
+/* Highlight border on focus */
+.prompt-input:focus {
+  border-color: #4a90e2;                    /* Blue border when focused */
+}
+/* ================== CODE EDITOR TEXTAREA ================== */
+/* Style for the main code input area (if using a textarea) */
+.code-editor-textarea {
+  flex: 1;                                  /* Grow to fill available space */
+  width: 100%;
+  padding: 16px;
+  font-family: 'Courier New', monospace;    /* Monospace font for code */
+  font-size: 14px;
+  color: #f8f8f2;                           /* Light text for contrast */
+  background: #1e1e1e;                      /* Dark background */
+  border: 1px solid #333;                   /* Subtle border */
+  border-radius: 12px;
+  resize: vertical;                         /* Allow vertical resize */
+  overflow: auto;                           /* Scroll if content overflows */
+  min-height: 40vh;                         /* Minimum height (40% of viewport) */
+  max-height: 50vh;                         /* Maximum height (50% of viewport) */
+  box-sizing: border-box;
+  margin: 0;
+  scrollbar-width: none;                    /* Hide scrollbar in Firefox */
+}
+/* Hide scrollbar in WebKit browsers (Chrome, Safari) */
+.code-editor-textarea::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;                  /* Fully hidden scrollbar track */
+}
+/* ================== CODE OUTPUT BOX ================== */
+/* Container for displaying code execution output */
+.code-output-box {
+  flex: 1;                                /* Take up remaining space in container */
+  padding: 12px 16px;                     /* Inner spacing for readability */
+  font-family: 'Courier New', monospace;  /* Monospace font for code clarity */
+  font-size: 14px;
+  color: #f8f8f2;                         /* Light text color for contrast */
+  background: #1e1e1e;                    /* Dark background for code readability */
+  border: 1px solid #444;                 /* Subtle border */
+  border-radius: 12px;                    /* Rounded corners */
+  overflow-y: auto;                       /* Enable vertical scrolling if needed */
+  white-space: pre-wrap;                  /* Preserve line breaks and wrap long lines */
+  word-break: break-word;                 /* Break long words to avoid overflow */
+  min-height: 30vh;                       /* Minimum height relative to viewport */
+  max-height: 40vh;                       /* Maximum height relative to viewport */
+  box-sizing: border-box;                 /* Include padding/border in dimensions */
+  margin: 0;
+  scrollbar-width: none;                  /* Hide scrollbar in Firefox */
+}
+/* Hide scrollbar in WebKit browsers (Chrome, Safari) */
+.code-output-box::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+/* Style code block inside output box */
+.code-output-box code {
+  display: block;
+  background: transparent;                /* No additional background */
+  font-size: 14px;
+  line-height: 1.6;                       /* Improve readability of code */
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* ================== RESPONSIVE HEIGHT (MAXIMIZED MODAL) ================== */
+/* Adjust height when editor is maximized */
+.code-editor-modal.maximized .code-editor-textarea,
+.code-editor-modal.maximized .code-output-box {
+  height: 45vh;                           /* Increase height for more space */
+}
+/* ================== EDITOR FOOTER ================== */
+/* Footer containing run button or controls */
+.editor-footer {
+  display: flex;
+  justify-content: flex-end;              /* Align buttons to the right */
+  padding-top: 6px;
+}
+/* Run button styling */
+.run-btn {
+  background: none;
+  border: none;
+  color: #4a90e2;                         /* Blue color to indicate action */
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s ease;            /* Smooth color change on hover */
+}
+
+.run-btn:hover {
+  color: #357ab7;                         /* Darker blue on hover for feedback */
+}
+/* ================== CODE BLOCK WRAPPER ================== */
+/* Wrapper around individual code blocks (bot replies, examples) */
+.code-block-wrapper {
+  position: relative;
+  background: #1e1e1e;
+  border-radius: 12px;
+  margin: 12px 0;                         /* Space above/below each block */
+  padding: 16px 18px 18px 18px;           /* Extra bottom padding for copy button space */
+  overflow: auto;
+  scrollbar-width: none;                  /* Hide scrollbar in Firefox */
+}
+/* Hide scrollbar in WebKit browsers */
+.code-block-wrapper::-webkit-scrollbar {
+  display: none;
+}
+/* ================== COPY BUTTON ================== */
+/* Button inside code block for copying code */
+.copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #444;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;            /* Smooth background change on hover */
+}
+
+.copy-button:hover {
+  background: #666;                       /* Lighter background on hover */
+}
+/* ================== PRE > CODE STYLING ================== */
+/* Standard code block formatting */
+pre code {
+  background: transparent;
+  color: #f8f8f2;
+  padding: 0;
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;                  /* Allow wrapping */
+  word-break: break-word;                 /* Break long words */
+}
+/* ================== RESPONSIVE ADJUSTMENTS ================== */
+/* Styles for small screens (≤ 600px width) */
+@media screen and (max-width: 600px) {
+  /* Make greeting text smaller for better fit */
+  .greeting {
+    font-size: 1.8rem;
+  }
+
+  /* Adjust main wrapper padding and alignment */
+  .main-wrapper {
+    padding: 10px;        /* Reduce padding to save space */
+    align-items: stretch; /* Let inner content stretch full width */
+  }
+
+  /* Reduce side padding on center wrapper */
+  .center-wrapper {
+    padding: 0 10px;
+  }
+
+  /* Compact input wrapper for small devices */
+  .input-wrapper {
+    padding: 10px 16px;
+    margin: 0 12px;       /* Add side margin for spacing */
+    box-sizing: border-box;
+    max-width: 100%;      /* Ensure full width on small screens */
+    overflow: hidden;     /* Prevent content spillover */
+  }
+
+  /* Input field adjustments */
+  .input-wrapper input[type="text"] {
+    font-size: 14px;      /* Slightly smaller text */
+    padding: 6px;         /* Reduce padding */
+    min-width: 0;         /* Allow input to shrink if needed */
+  }
+
+  /* Icon button adjustments */
+  .icon-btn {
+    font-size: 14px;      /* Smaller icon size */
+    margin-left: 6px;
+    padding: 6px 4px;
+  }
+
+  /* Adjust inner icon size */
+  .icon-btn i {
+    font-size: 16px;
+  }
+
+  /* Reduce max height of message area */
+  .messages {
+    max-height: 250px;
+    padding: 0 6px;       /* Less side padding */
+  }
+
+  /* Make message bubbles smaller */
+  .message {
+    font-size: 14px;
+    padding: 6px 10px;
+    margin: 6px 0;
+  }
+
+  /* Make sidebar narrower and adjust padding */
+  .sidebar {
+    width: 200px;
+    padding: 20px;
+  }
+
+  /* Sidebar title size */
+  .sidebar h3 {
+    font-size: 18px;
+  }
+
+  /* Resize modal on mobile */
+  .code-editor-modal {
+    width: 95%;           /* Nearly full width */
+    height: 55vh;         /* Shorter height for mobile */
+  }
+
+  /* Make top controls smaller and adjust position */
+  .theme-toggle, .hamburger {
+    font-size: 20px;
+    top: 12px;
+  }
+
+  /* Adjust switch size and gap for better fit */
+  .switch {
+    gap: 12px;
+    width: 170px;
+  }
+
+  /* Make slider larger for better tap targets */
+  .slider-round {
+    width: 50px;
+    height: 28px;
+  }
+
+  /* Adjust slider handle size and position */
+  .slider-round::before {
+    width: 22px;
+    height: 22px;
+    left: 3px;
+    bottom: 3px;
+  }
+
+  /* Make switch icons larger */
+  .switch-icon {
+    height: 26px;
+    width: 26px;
+  }
+
+  /* Adjust MySQL icon size */
+  .mysql-icon {
+    height: 30px;
+  }
+
+  /* Adjust toggle switch group position and spacing */
+  .toggle-switches {
+    top: 60px;
+    right: 16px;
+    gap: 18px;
+  }
+}
+/* ================== EDITOR CODE CONTAINER ================== */
+/* Container holding input and output editors side-by-side */
+.editor-code-container {
+  display: flex;        /* Arrange editors horizontally */
+  height: 80vh;         /* Large height to fill page space */
+  gap: 0;               /* Remove spacing between editors for seamless look */
+}
+
+/* Each editor pane (input + output) */
+.editor-code-container > div {
+  position: relative;   /* Needed for absolute positioning of copy/run buttons */
+  flex: 1;              /* Each takes up equal space */
+  min-height: 50vh;     /* Ensure minimum usable height */
+}
+
+/* Input editor adjustments for seamless integration */
+#inputEditor {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;     /* Remove corner rounding for side-by-side join */
+  overflow: hidden;     /* Prevent scrollbars from showing around editor */
+}
+/* ================== OUTPUT EDITOR STYLING ================== */
+/* Style the output editor to fill its container fully */
+#outputEditor {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;      /* Remove corner rounding for seamless merge with input editor */
+  overflow: hidden;      /* Prevent overflow scrollbars from appearing */
+}
+
+/* Optional vertical divider between input and output editors */
+.editor-code-container > div:first-child {
+  border-right: 1px solid #333;  /* Add a subtle vertical line between editors */
+}
+/* ================== EDITOR BUTTONS ================== */
+/* Base styles for both copy and run buttons inside editor */
+.copy-btn, .run-icon-btn {
+  position: absolute;           /* Position within parent editor container */
+  bottom: 8px;                  /* Offset from bottom */
+  background: #444;             /* Dark background */
+  color: white;                 /* White icon/text */
+  border: none;                 /* Remove default border */
+  padding: 4px 6px;             /* Inner padding for click area */
+  font-size: 14px;              /* Standard font/icon size */
+  border-radius: 6px;           /* Slightly rounded corners */
+  cursor: pointer;              /* Pointer cursor on hover */
+  z-index: 10;                  /* Ensure on top of editor content */
+  transition: background 0.2s;  /* Smooth background color change on hover */
+}
+
+/* Hover effect for editor buttons */
+.copy-btn:hover, .run-icon-btn:hover {
+  background: #666;             /* Lighter background on hover for feedback */
+}
+/* ================== BUTTON CONTAINER POSITIONS ================== */
+/* Container for input editor buttons (copy, run) */
+.input-buttons {
+  position: absolute;           /* Position within editor */
+  bottom: 8px;
+  right: 8px;                   /* Place at bottom-right corner */
+  display: flex;                /* Arrange buttons side by side */
+  gap: 6px;                     /* Space between buttons */
+}
+
+/* Container for output editor buttons (typically just copy) */
+.output-buttons {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;                   /* Align at bottom-right of output editor */
+}
+/* ================== RESPONSIVE: STACKED LAYOUT ================== */
+/* Stack input and output editors vertically on small screens */
+@media (max-width: 768px) {
+  .editor-code-container {
+    flex-direction: column;     /* Stack editors top-to-bottom */
+    height: auto;               /* Let container height adjust naturally */
+  }
+
+  .editor-code-container > div {
+    min-height: 35vh;           /* Ensure each editor takes up space vertically */
+  }
+
+  /* Ensure stacked editors still fill their container space */
+  #inputEditor, #outputEditor {
+    flex: 1;
+    height: 100%;
+    border-radius: 0;           /* No corner rounding for seamless stack */
+  }
+
+  /* Replace vertical divider with horizontal divider in stacked mode */
+  .editor-code-container > div:first-child {
+    border-right: none;         /* Remove right border divider */
+    border-bottom: 1px solid #333; /* Add horizontal divider between stacked editors */
+  }
+}
+
+    
