@@ -37,7 +37,6 @@
       </mask>
       <circle class="sun" cx="12" cy="12" r="6" mask="url(#moon-mask)" fill="currentColor" />
       <g class="sun-beams" stroke="currentColor">
-        <!-- Sun beams for visual effect -->
         <line x1="12" y1="1" x2="12" y2="3" />
         <line x1="12" y1="21" x2="12" y2="23" />
         <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
@@ -100,8 +99,6 @@
         <!-- Input field and buttons -->
         <div class="input-wrapper">
           <input type="text" id="chatInput" placeholder="Ask follow-up..." />
-          <label for="fileUpload" class="icon-btn"><i class="fa-solid fa-paperclip"></i></label>
-          <input type="file" id="fileUpload" style="display: none;" onchange="handleFileUpload(event)" />
           <button class="icon-btn" onclick="toggleCodeEditor()"><i class="fa-solid fa-code"></i></button>
           <button class="icon-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
         </div>
@@ -151,3 +148,4 @@
   <script src="js/script.js"></script>
 </body>
 </html>
+
