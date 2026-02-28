@@ -1,255 +1,896 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SQL ASSISTANT</title>
+  <title>MySQL Assistant</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   
   <style>
+    * {
+  box-sizing: border-box;
+}
+
+    /* ==================== CSS VARIABLES (from styles.css) ==================== */
+    :root {
+      --bg-color: #1e1e1e; /* Background color */
+      --text-color: white; /* Text color */
+      --container-bg: rgba(40, 40, 40, 0.7); /* Semi-transparent container background */
+      --message-user-bg: #4a90e2; /* User message bubble background */
+      --message-bot-bg: #2f2f2f; /* Bot message bubble background */
+      --input-bg: rgba(50, 50, 50, 0.8); /* Input fields background */
+      --border-color: #444; /* General border color */
+      --indicator-color: #aaa; /* Typing indicator color */
+    }
+    body.light-theme { /* Light theme overrides for CSS variables */
+      --bg-color: #f5f5f5;
+      --text-color: #111;
+      --container-bg: rgba(255, 255, 255, 0.9);
+      --message-user-bg: #007aff;
+      --message-bot-bg: #e0e0e0;
+      --input-bg: rgba(240, 240, 240, 0.8);
+      --border-color: #ccc;
+      --indicator-color: #555;
+    }
+
+    /* ==================== GLOBAL BODY (from styles.css) ==================== */
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: #1e1e1e;
-      color: #f0f0f0;
+      padding: 0;
+      background: var(--bg-color);
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-color);
       height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-y: auto; /* Allow body to scroll if content exceeds height */
     }
 
-    .main-wrapper {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .center-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      max-width: 800px;
-      width: 100%;
+    /* ==================== HEADER (adapted from existing and index.html greeting) ==================== */
+    .header {
+      background-color: var(--container-bg);
+      padding: 15px 20px;
       text-align: center;
-      padding: 0 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      box-sizing: border-box;
+      position: relative; /* For positioning the new open modal button */
     }
 
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 600;
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      /* Using a gradient text effect similar to index.html's greeting */
       background: linear-gradient(-45deg, #6a5acd, #e66465, #8a2be2, #e66465);
       background-size: 400% 400%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: gradientMove 5s ease infinite;
-      margin-bottom: 20px;
     }
 
+    /* ==================== MAIN WRAPPER (from styles.css) ==================== */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column; /* Keep existing column flow for sections */
+      align-items: center;
+      justify-content: flex-start; /* Align content to the top */
+      padding: 20px;
+      gap: 20px; /* Spacing between the two center-wrapper sections */
+    }
+
+    /* ==================== CENTER WRAPPER (from styles.css) ==================== */
+    .center-wrapper {
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  /* Removed background, padding, and box-shadow to avoid visual overlap */
+}
+
+
+    /* ==================== INPUT & SCHEMA SECTIONS (from existing, styled with theme variables) ==================== */
+    /* These styles apply to the content now inside the modal */
+    .input-section, .schema-section {
+      width: 100%;
+      margin-bottom: 20px; /* Kept existing margin-bottom for separation */
+      padding: 15px;
+      border-radius: 12px; /* Consistent border-radius */
+      background-color: var(--input-bg); /* Use input-bg for these sections */
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2); /* Subtle inner shadow */
+    }
+
+    .input-section h2, .schema-section h2, .modal-content h3 { /* Adjusted h3 selector for modal content */
+      color: var(--text-color); /* Use general text color */
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 20px;
+      font-weight: 600; /* Poppins-semi-bold */
+      text-align: center;
+    }
+
+    /* ==================== FORM GROUPS & INPUTS (adapted from styles.css .input-wrapper input) ==================== */
+    .form-group {
+      margin-bottom: 15px;
+      width: 100%; /* Ensure form groups take full width */
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+      width: calc(100% - 24px); /* Account for padding */
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px; /* Consistent border-radius */
+      background-color: var(--input-bg);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-color);
+      font-size: 15px; /* Consistent font size */
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      box-sizing: border-box; /* Include padding in width */
+    }
+
+    .form-group input[type="text"]::placeholder,
+    .form-group input[type="password"]::placeholder {
+      color: var(--indicator-color); /* Consistent placeholder color */
+    }
+
+    /* ==================== BUTTONS (adapted from index.html logout-btn, send-btn) ==================== */
+    button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-family: 'Poppins', sans-serif;
+}
+button:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+
+    /* Specific style for Send button in chat input, adapts from .icon-btn and .send-btn */
+    .input-wrapper button {
+      background: transparent; /* No background as it's an icon button */
+      border: navy;
+      color: var(--text-color); /* Use text-color for icons */
+      font-size: 14px; /* Larger icon size */
+      padding: 6px;
+      margin-left: 50px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      box-shadow: none; /* Remove redundant shadow */
+      border-radius: 0; /* No specific border-radius needed for icon button */
+      margin-bottom: 0;  /* Remove top margin for this button */
+      position: relative;
+    }
+
+    .input-wrapper button:hover {
+      transform: scale(1.2);
+      background: transparent; /* Ensure no background changes on hover */
+    }
+
+    /* ==================== STATUS MESSAGES (from existing, updated colors) ==================== */
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+      font-weight: 500;
+    }
+
+    .status-info {
+      background-color: #28a745; /* Green for success/info */
+      color: white;
+    }
+
+    .status-error {
+      background-color: #dc3545; /* Red for error */
+      color: white;
+    }
+
+    /* ==================== SCHEMA OUTPUT (styled like code blocks from styles.css) ==================== */
+    #schemaOutput {
+      background-color: #1a1a1a; /* Dark background for code */
+      padding: 15px;
+      border-radius: 12px; /* Consistent border-radius */
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #f0f0f0;
+      margin-top: 15px; /* Added spacing */
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* ==================== CHAT CONTAINER (from styles.css) ==================== */
+ .chat-container {
+  height: 70vh;
+  min-height: 400px;
+  width: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures input stays at bottom */
+  background: rgba(50, 50, 50, 0.8);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-bottom: 14px;
+}
+
+
+.message {
+  max-width: 65%;
+  padding: 10px 16px;
+  margin: 8px 0;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.message.user {
+  background: var(--message-user-bg);
+  color: white;
+  align-self: flex-end;
+  margin-left: auto;
+  text-align: left;
+  border-radius: 16px 16px 4px 16px;
+  padding: 8px 14px;
+  max-width: fit-content;         /* 👈 dynamic width based on content */
+  min-width: 50px;
+  word-break: break-word;
+}
+
+
+.message.bot {
+  background: var(--message-bot-bg);
+  color: var(--text-color);
+  align-self: flex-start;     /* 👈 this aligns to left */
+  text-align: left;
+  border-radius: 16px 16px 16px 4px;
+}
+
+
+
+    /* ===================== INPUT WRAPPER (from styles.css) ===================== */
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border-radius: 999px;
+      padding: 12px 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 720px; /* Match index.html's input max-width */
+      box-sizing: border-box;
+    }
+
+    .input-wrapper input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-color);
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      padding: 8px;
+      margin-right: 10px;
+    }
+
+    .input-wrapper input::placeholder {
+      color: var(--indicator-color);
+    }
+
+    /* ================== CODE BLOCK WRAPPER (from styles.css, for code within messages) ================== */
+    .code-block-wrapper {
+      position: relative;
+      background: #1e1e1e; /* Dark background for code blocks */
+      border-radius: 12px;
+      margin: 12px 0;
+      padding: 16px 18px 18px 18px;
+      overflow: auto;
+      scrollbar-width: none;
+      width: calc(100% - 36px); /* Adjust width for padding */
+      box-sizing: border-box;
+    }
+    .code-block-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ================== PRE > CODE STYLING (from styles.css) ================== */
+    pre code {
+      background: transparent;
+      color: #f8f8f2;
+      padding: 0;
+      display: block;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ================== COPY BUTTON within code blocks (from styles.css) ================== */
+    .copy-button { /* Applied to copy button inside rendered code blocks */
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      opacity: 0.8;
+    }
+    .copy-button:hover {
+      background: #666;
+      opacity: 1;
+    }
+
+    /* ================== KEYFRAMES (from styles.css) ================== */
     @keyframes gradientMove {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
-    .subheading {
-  font-size: 1.25rem;
-  font-weight: 500;
-  margin-top: -12px;
-  margin-bottom: 28px;
-  background: linear-gradient(-45deg, #f06292, #ba68c8, #9575cd);
-  background-size: 400% 400%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientMove 5s ease infinite;
-}
-.sql-icon {
-  width: 80px;
-  height: auto;
-  margin-bottom: 16px;
+    /* ================== RESPONSIVE ADJUSTMENTS (adapted from styles.css) ================== */
+    /* @media (max-width: 768px) { /* Use 768px as a common breakpoint, adjust as needed 
+      .main-wrapper {
+        padding: 10px;
+        gap: 15px;
+      }
+      .center-wrapper {
+        padding: 15px;
+        border-radius: 12px;
+      }
+      .input-section, .schema-section {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      .input-section h2, .schema-section h2, .modal-content h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      .form-group input {
+        font-size: 14px;
+        padding: 8px 10px;
+      }
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+      .status-message {
+        font-size: 13px;
+        padding: 8px;
+      }
+      #schemaOutput {
+        font-size: 12px;
+        padding: 10px;
+        max-height: 150px;
+      }
+      .chat-container {
+        padding: 15px;
+        border-radius: 12px;
+        max-height: 450px;
+      }
+      .chat-area {
+        max-height: 250px;
+        padding: 0 6px;
+      }
+      .message {
+        font-size: 14px;
+        padding: 6px 10px;
+        margin: 6px 0;
+        max-width: 95%;
+      }
+      .input-wrapper {
+        padding: 10px 16px;
+        max-width: 100%;
+      }
+      .input-wrapper input {
+        font-size: 14px;
+        padding: 6px;
+      }
+      .input-wrapper button {
+        font-size: 16px; /* Icon size 
+        padding: 4px; /* Adjust padding for icon button 
+      }
+      .code-block-wrapper {
+        padding: 10px 12px 12px 12px;
+        margin: 8px 0;
+        width: calc(100% - 24px);
+      }
+      pre code {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    } */
+
+    /* ================== RESPONSIVE ADJUSTMENTS (adapted from styles.css) ================== */
+    @media (max-width: 768px) {
+      .main-wrapper {
+        flex-direction: column; /* Stack sidebar on top of chat */
+        padding: 10px;
+        gap: 15px;
+      }
+      #sidebar {
+        width: 100%; /* Full width on mobile */
+        max-height: 200px;
+      }
+      .center-wrapper {
+        padding: 15px;
+        border-radius: 12px;
+      }
+      .input-section, .schema-section {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 8px;
+      }
+      .input-section h2, .schema-section h2, .modal-content h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      .form-group input {
+        font-size: 14px;
+        padding: 8px 10px;
+      }
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+      .status-message {
+        font-size: 13px;
+        padding: 8px;
+      }
+      #schemaOutput {
+        font-size: 12px;
+        padding: 10px;
+        max-height: 150px;
+      }
+      .chat-container {
+        padding: 15px;
+        border-radius: 12px;
+        max-height: 450px;
+      }
+      .chat-area {
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes pulseIcon {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 4px #ff80ab);
-  }
-  50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 10px #ff80ab);
-  }
+      .message {
+        font-size: 14px;
+        padding: 6px 10px;
+        margin: 6px 0;
+        max-width: 95%;
+      }
+      .input-wrapper {
+        padding: 10px 16px;
+        max-width: 100%;
+      }
+      .input-wrapper input {
+        font-size: 14px;
+        padding: 6px;
+      }
+      .input-wrapper button {
+        font-size: 16px; /* Icon size */
+        padding: 4px; /* Adjust padding for icon button */
+      }
+      .code-block-wrapper {
+        padding: 10px 12px 12px 12px;
+        margin: 8px 0;
+        width: calc(100% - 24px);
+      }
+      pre code {
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    }
+
+    /* ==================== MODAL STYLES (New) ==================== */
+   .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  overflow: hidden;           /* ✅ removes page-level scroll */
 }
 
-    .messages {
-      max-height: 340px;
+
+
+  .modal-content {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 10px;
+  width: 100vh;
+  max-width: 480px;           /* 👈 smaller width */
+  max-height: 100vh;           /* 👈 limits height */
+  overflow-y: auto;           /* scrolls only internally if needed */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+}
+
+
+    .modal-close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  border: none;
+  color: white;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;              /* 👈 makes it round */
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+    .modal-close-button:focus {
+      color: #aaa;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Animation keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Button to open the modal, placed in header */
+    .open-modal-button {
+      position: absolute;
+      top: 15px;
+      right: 20px; /* Adjust as needed, might conflict with other buttons if any */
+      background: linear-gradient(135deg, #00c3ff, #4a90e2); /* Blue gradient for open button */
+      background-size: 400% 400%;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 999px; /* Pill-shaped */
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.2s ease, background-position 1.5s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .open-modal-button:hover {
+      transform: scale(1.05);
+      background-position: 100% 0;
+    }
+
+    @media (max-width: 600px) {
+        .open-modal-button {
+            padding: 6px 12px;
+            font-size: 12px;
+            top: 10px;
+            right: 10px;
+        }
+        .modal-content {
+            padding: 20px;
+        }
+    }
+    .back-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+
+    /* ==================== SIDEBAR (New) ==================== */
+    /* #sidebar {
+      width: 200px;
+      background-color: var(--container-bg);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      align-self: flex-start;
+      max-height: 640px; /* Aligns with chat container height 
       overflow-y: auto;
+    } */
+
+    #sidebar {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  width: 200px;
+  background-color: var(--container-bg);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  z-index: 10;
+  font-family: 'Poppins', sans-serif;
+}
+
+    #sidebar h2 {
+      margin-top: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-color);
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    #tableList {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #tableList li {
+      color: var(--text-color);
+      background-color: var(--input-bg);
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      border-left: 4px solid transparent;
+    }
+
+    #tableList li:hover {
+      background-color: #4a90e2;
+      color: white;
+      transform: translateX(5px);
+      border-left: 4px solid #8ec5fc;
+    }
+    .main-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px); /* subtract header height */
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.chat-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 40px;
+}
+
+    /* ==================== MAIN WRAPPER (Modified) ==================== */
+    /* .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: row; /* Arrange items side-by-side 
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+      gap: 120px;
+    } */
+
+    .main-wrapper {
+      flex: 1;
+      padding: 20px;
+    }
+
+    /* ==================== CENTER WRAPPER (Modified) ==================== */
+    /* .center-wrapper {
+      max-width: 800px;
       width: 100%;
-      margin-top: 20px;
-      padding: 0 12px;
+      flex: 1; /* Allows the chat container to grow and fill remaining space 
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
+    } */
 
-    .message {
-      display: flex;
-      gap: 6px;
-      align-items: flex-start;
-      padding: 12px 16px;
-      margin: 8px 0;
-      border-radius: 14px;
-      max-width: 85%;
-      color: white;
-      font-size: 15px;
-      line-height: 1.5;
-      text-align: left;
-      white-space: pre-wrap;
-    }
-
-    .user {
-      background-color: #4a90e2;
-      align-self: flex-end;
-    }
-
-    .bot {
-      background-color: #2f2f2f;
-      align-self: flex-start;
-    }
-
-    .code-block-wrapper {
-      background: #1e1e1e;
-      border-radius: 10px;
-      margin-top: 8px;
-      padding: 16px;
-      overflow-x: auto;
-    }
-
-    pre code {
-      background: transparent;
-      color: #f8f8f2;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .input-wrapper {
-      display: flex;
-      align-items: center;
-      background: #2c2c2c;
-      border-radius: 999px;
-      padding: 12px 20px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .center-wrapper {
+      max-width: 800px;
       width: 100%;
-      max-width: 720px;
-    }
-
-    .input-wrapper input[type="text"] {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      color: white;
-      font-size: 15px;
-      font-family: 'Poppins', sans-serif;
-      padding: 8px;
-    }
-
-    .send-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 18px;
-      padding: 6px;
-      margin-left: 8px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .send-btn:hover {
-      transform: scale(1.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 auto; /* This now centers the chat area */
     }
   </style>
 </head>
 <body>
-  <div class="main-wrapper">
-    <div class="center-wrapper">
-      <img src="images/icon1.png" alt="SQL Icon" class="sql-icon" />
-<h2 class="subheading">SQL QUERY BUILDER & GENERATOR</h2>
+  <div class="header">
+    <h1>MySQL Assistant</h1>
+    <button class="open-modal-button" onclick="openMySQLModal()">
+      <i class="fa-solid fa-database"></i> MySQL Connection
+    </button>
+  </div>
+  <a href="/index" class="back-button" title="Go back to home">
+  ⬅ Back
+</a>
 
 
-      <div class="input-wrapper">
-        <input type="text" id="mysqlInput" placeholder="Ask a MySQL query..." />
-        <button class="send-btn" onclick="sendMySQL()">▶️</button>
+  <!-- <div class="main-wrapper">
+    <div class="center-wrapper" style="margin-top: 0px;">
+      <div class="chat-container">
+        <div class="chat-area" id="chatArea">
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="userInput" placeholder="Ask your question..." onkeydown="handleKeyDown(event)" />
+          <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
       </div>
+    </div>
+  </div> -->
 
-      <div class="messages" id="chatArea"></div>
+  <div class="main-wrapper">
+    <div class="chat-layout">
+    <div id="sidebar">
+      <h2><i class="fa-solid fa-table-list"></i> Tables</h2>
+      <ul id="tableList">
+        <li>Connect to a DB to see tables.</li>
+      </ul>
+    </div>
+
+    <div class="center-wrapper" style="margin-top: 0px;">
+      <div class="chat-container">
+        <div class="chat-area" id="chatArea">
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="userInput" placeholder="Ask your question..." onkeydown="handleKeyDown(event)" />
+          <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script>
-    const chatArea = document.getElementById("chatArea");
-    const input = document.getElementById("mysqlInput");
+  <!-- MySQL Connection Modal -->
+  <div id="mysqlConnectionModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="modal-close-button" onclick="closeMySQLModal()">&times;</button>
+      <div class="input-section">
+        <h2>MySQL Connection</h2>
+        <div class="form-group">
+          <label for="dbHost">Host:</label>
+          <input type="text" id="dbHost" value="localhost" placeholder="e.g., localhost" />
+        </div>
+        <div class="form-group">
+          <label for="dbUser">User:</label>
+          <input type="text" id="dbUser" value="root" placeholder="e.g., root" />
+        </div>
+        <div class="form-group">
+          <label for="dbPassword">Password:</label>
+          <input type="password" id="dbPassword" value="your_mysql_password" placeholder="Your MySQL password" />
+        </div>
+        <div class="form-group">
+          <label for="dbDatabase">Database:</label>
+          <input type="text" id="dbDatabase" value="test_db" placeholder="e.g., my_database" />
+        </div>
+        <button onclick="connectAndLoadSchema()">Connect & Load Schema</button>
+        <div id="connectionStatus" class="status-message"></div>
+      </div>
 
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMySQL();
+      <div class="schema-section">
+        <h3>Loaded Schema:</h3>
+        <pre id="schemaOutput">No schema loaded yet.</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- External JavaScript file -->
+  <script src="/static/mysql_extension_ui.js"></script>
+
+  <!-- Inline JavaScript for Modal functionality only -->
+  <script>
+    // JavaScript for Modal functionality
+    const mysqlConnectionModal = document.getElementById('mysqlConnectionModal');
+
+    function openMySQLModal() {
+      mysqlConnectionModal.style.display = 'flex'; // Use flex to center content
+    }
+
+    function closeMySQLModal() {
+      mysqlConnectionModal.style.display = 'none';
+    }
+
+    // Close modal if user clicks outside of it
+    window.addEventListener('click', (event) => {
+      if (event.target === mysqlConnectionModal) { // Use strict equality for comparison
+        closeMySQLModal();
       }
     });
 
-    async function sendMySQL() {
-      const text = input.value.trim();
-      if (!text) return;
-      addMessage(text, "user");
-      input.value = "";
-
-      try {
-        const res = await fetch("http://localhost:8000/sql", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: text })
-        });
-
-        const data = await res.json();
-        renderBotMessage(data.response || "No response");
-      } catch (err) {
-        console.error(err);
-        renderBotMessage("⚠️ Could not connect to backend.");
-      }
-    }
-
-    function addMessage(msg, type) {
-      const div = document.createElement("div");
-      div.className = `message ${type}`;
-      div.textContent = msg;
-      chatArea.appendChild(div);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
-
-    function renderBotMessage(text) {
-      const html = marked.parse(text);
-      const wrapper = document.createElement("div");
-      wrapper.className = "message bot";
-      wrapper.innerHTML = html;
-
-      wrapper.querySelectorAll('pre').forEach(pre => {
-        const code = pre.querySelector('code');
-        if (!code.className.includes('language-')) {
-          code.className = 'language-sql';
-        }
-        const outer = document.createElement("div");
-        outer.className = "code-block-wrapper";
-        pre.replaceWith(outer);
-        outer.appendChild(pre);
-      });
-
-      chatArea.appendChild(wrapper);
-      chatArea.scrollTop = chatArea.scrollHeight;
-      hljs.highlightAll();
-    }
+    // Ensure initial state of modal is hidden on DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', () => {
+        mysqlConnectionModal.style.display = 'none';
+        // highlight.js is handled by the script tag in the head for initial load
+        // and by the renderBotMessage function for new messages.
+    });
   </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
  # ✅ Replace GPT with Gemini
 from services.prompt_templates import get_debug_prompt
 
@@ -9,4 +9,4 @@ class DebugAssistantAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"{get_debug_prompt()}\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ Call Gemini here
+        return call_bedrock(prompt)  # ✅ Call Gemini here

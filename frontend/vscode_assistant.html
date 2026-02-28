@@ -118,7 +118,7 @@
       }
 
       try {
-        const res = await fetch("http://localhost:8000/vscode/launch-vscode", {
+        const res = await fetch("/vscode/launch-vscode", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ path: vscodePath })
@@ -147,7 +147,7 @@
       formData.append("prompt", prompt);
 
       try {
-        const res = await fetch("http://localhost:8000/ask-code", {
+        const res = await fetch("/ask-code", {
           method: "POST",
           body: formData
         });

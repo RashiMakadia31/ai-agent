@@ -10,10 +10,15 @@ async function sendQuery() {
     output.innerText = "⏳ Thinking...";
   
     try {
-      const res = await fetch("http://localhost:8000/ai-assistant", {
+      const res = await fetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input })
+        body: JSON.stringify({
+          prompt: input,
+          language: "Python",
+          code: "",
+          use_agent: true
+        })
       });
   
       const data = await res.json();

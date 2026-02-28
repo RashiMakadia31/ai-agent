@@ -54,7 +54,7 @@
       padding: 14px 16px;
       border: 0;
       background: transparent;
-      color: #fff;
+      color: #ffffff;
       font-family: monospace, serif;
       letter-spacing: 0.05em;
       font-size: 16px;
@@ -73,7 +73,7 @@
       background: transparent;
       outline: none;
       border: 0;
-      color: #fff;
+      color: #1a92ca;
       letter-spacing: 0.1em;
       font-weight: bold;
       font-family: monospace;
@@ -139,19 +139,19 @@
     .block-input input:focus ~ .bg-top .bg-inner,
     .block-input input:focus ~ .bg .bg-inner {
       top: 100%;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.363);
     }
 
     .block-input .bg-top,
     .block-input .bg-right,
     .block-input .bg {
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.414);
     }
 
     .block-input:hover .bg-top,
     .block-input:hover .bg-right,
     .block-input:hover .bg {
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.056);
     }
 
     .block-cube-hover:hover .bg-inner,
@@ -159,7 +159,7 @@
       top: 100%;
     }
 
-    /* ✅ Mobile-Friendly Styles */
+    /* Mobile-Friendly Styles */
     @media screen and (max-width: 600px) {
       .form {
         width: 90%;
@@ -180,41 +180,73 @@
         letter-spacing: 0.05em;
       }
     }
+
+    .message {
+      color: red; /* Style for error messages */
+      margin-top: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
 
-  <form class="form" action="/login/" method="POST" autocomplete="off">
-  <div class="control">
-    <h1>LOGIN</h1>
-    {% if message %}
-      <p style="color: red;">{{ message }}</p>
-    {% endif %}
-  </div>
+  <form class="form" id="loginForm" autocomplete="off">
+    <div class="control">
+      <h1>LOGIN</h1>
+    </div>
 
-  <div class="control block-cube block-input">
-    <input type="text" name="username" placeholder="Username" required />
-    <div class="bg-top"><div class="bg-inner"></div></div>
-    <div class="bg-right"><div class="bg-inner"></div></div>
-    <div class="bg"><div class="bg-inner"></div></div>
-  </div>
+    <div class="control block-cube block-input">
+      <input type="text" name="username" placeholder="Username" required />
+      <div class="bg-top"><div class="bg-inner"></div></div>
+      <div class="bg-right"><div class="bg-inner"></div></div>
+      <div class="bg"><div class="bg-inner"></div></div>
+    </div>
 
-  <div class="control block-cube block-input">
-    <input type="password" name="password" placeholder="Password" required />
-    <div class="bg-top"><div class="bg-inner"></div></div>
-    <div class="bg-right"><div class="bg-inner"></div></div>
-    <div class="bg"><div class="bg-inner"></div></div>
-  </div>
+    <div class="control block-cube block-input">
+      <input type="password" name="password" placeholder="Password" required />
+      <div class="bg-top"><div class="bg-inner"></div></div>
+      <div class="bg-right"><div class="bg-inner"></div></div>
+      <div class="bg"><div class="bg-inner"></div></div>
+    </div>
 
-  <button type="submit" class="btn block-cube block-cube-hover">
-    <div class="bg-top"><div class="bg-inner"></div></div>
-    <div class="bg-right"><div class="bg-inner"></div></div>
-    <div class="bg"><div class="bg-inner"></div></div>
-    <div class="text">ENTER</div>
-  </button>
+    <button type="submit" class="btn block-cube block-cube-hover">
+      <div class="bg-top"><div class="bg-inner"></div></div>
+      <div class="bg-right"><div class="bg-inner"></div></div>
+      <div class="bg"><div class="bg-inner"></div></div>
+      <div class="text">ENTER</div>
+    </button>
 
-  <p style="margin-top: 16px;">Don't have an account? <a href="/register/">Register</a></p>
-</form>
- 
+    <div id="feedbackMessage" class="message" style="color: #00d4ff;">
+      Don't have an account? <a href="/register" style="color: #00d4ff; text-decoration: none;">Register here</a>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent actual form submission
+
+      const username = event.target.username.value;
+      const password = event.target.password.value;
+      const feedback = document.getElementById('feedbackMessage');
+
+      // Retrieve stored users from localStorage
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+
+      // Find a user with matching credentials
+      const user = users.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        // On successful login
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('loggedInUser', username);
+        window.location.href = '/index'; // Redirect to the main app
+      } else {
+        // On failed login
+        feedback.textContent = 'Invalid username or password.';
+        feedback.style.color = 'red';
+      }
+    });
+  </script>
+
 </body>
 </html>

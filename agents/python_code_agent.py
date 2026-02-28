@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
  # ✅ switched from call_gpt to call_gemini
 from services.prompt_templates import get_default_prompt
 
@@ -9,4 +9,4 @@ class PythonCodeAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"{get_default_prompt()}\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ updated function call
+        return call_bedrock(prompt)  # ✅ updated function call

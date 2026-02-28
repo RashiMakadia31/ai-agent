@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Register</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
   <style>
+    /* Re-use most of your login.html CSS for consistency */
     *, ::after, ::before {
       box-sizing: border-box;
     }
@@ -130,17 +131,28 @@
       transition: all 0.2s ease-in-out;
     }
 
+    .block-cube .text {
+      position: relative;
+      z-index: 2;
+    }
+
     .block-input input:focus ~ .bg-right .bg-inner,
     .block-input input:focus ~ .bg-top .bg-inner,
     .block-input input:focus ~ .bg .bg-inner {
       top: 100%;
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.134);
+    }
+
+    .block-input .bg-top,
+    .block-input .bg-right,
+    .block-input .bg {
+      background: rgba(255, 255, 255, 0.103);
     }
 
     .block-input:hover .bg-top,
     .block-input:hover .bg-right,
     .block-input:hover .bg {
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.122);
     }
 
     .block-cube-hover:hover .bg-inner,
@@ -148,19 +160,7 @@
       top: 100%;
     }
 
-    p {
-      font-size: 14px;
-      color: red;
-    }
-
-    .link-text {
-      color: #00d9ff;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-
+    /* Mobile-Friendly Styles */
     @media screen and (max-width: 600px) {
       .form {
         width: 90%;
@@ -175,17 +175,25 @@
         font-size: 15px;
         padding: 12px;
       }
+
+      .btn {
+        font-size: 15px;
+        letter-spacing: 0.05em;
+      }
+    }
+
+    .message {
+      color: #00d4ff;
+      margin-top: 10px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <form class="form" action="/register/" method="POST">
+  <form class="form" id="registerForm" autocomplete="off">
     <div class="control">
       <h1>REGISTER</h1>
-      {% if message %}
-        <p>{{ message }}</p>
-      {% endif %}
     </div>
 
     <div class="control block-cube block-input">
@@ -206,11 +214,48 @@
       <div class="bg-top"><div class="bg-inner"></div></div>
       <div class="bg-right"><div class="bg-inner"></div></div>
       <div class="bg"><div class="bg-inner"></div></div>
-      <div class="text">ENTER</div>
+      <div class="text">REGISTER</div>
     </button>
 
-    <a class="link-text" href="/login/">Already have an account? Login</a>
+    <div id="feedbackMessage" class="message">
+      Already have an account? <a href="/login" style="color: #00d4ff; text-decoration: none;">Login here</a>
+    </div>
   </form>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const username = event.target.username.value;
+      const password = event.target.password.value;
+      const feedback = document.getElementById('feedbackMessage');
+
+      if (!username || !password) {
+        feedback.textContent = 'Username and password cannot be empty.';
+        feedback.style.color = 'red';
+        return;
+      }
+
+      // Get existing users or initialize an empty array
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      
+      // Check if username already exists
+      const existingUser = users.find(user => user.username === username);
+
+      if (existingUser) {
+        feedback.textContent = 'Username already taken. Please choose another.';
+        feedback.style.color = 'red';
+      } else {
+        // Add the new user
+        users.push({ username: username, password: password });
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Notify user and redirect
+        alert('Registration successful! Please log in.');
+        window.location.href = '/login';
+      }
+    });
+  </script>
 
 </body>
 </html>

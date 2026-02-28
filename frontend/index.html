@@ -4,33 +4,36 @@
   <!-- Basic meta tags -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat UI with Upload</title>
+  <title>AGENTIC ASSISTANT</title>
+
   <!-- Redirect to login if not logged in -->
   <script>
     if (localStorage.getItem("isLoggedIn") !== "true") {
-      window.location.href = "login.html";
+      window.location.href = "/login";
     }
   </script>
+
   <!-- Fonts and icon libraries -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <link rel="stylesheet" href="css/styles.css">
-  <!-- External scripts for markdown rendering, syntax highlighting, and code editor -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+
+  <!-- External scripts -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script>
-    // Automatically highlight all code on page load
     document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());
   </script>
 </head>
 <body>
 
-  <!-- Button to toggle light/dark theme -->
+  <!-- Theme toggle -->
   <button class="theme-toggle" id="theme-toggle" title="Toggle light & dark" aria-label="auto" aria-live="polite">
     <svg class="sun-and-moon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
-      <!-- Moon mask for sun/moon toggle effect -->
       <mask class="moon" id="moon-mask">
         <rect x="0" y="0" width="100%" height="100%" fill="white" />
         <circle cx="24" cy="10" r="6" fill="black" />
@@ -49,34 +52,38 @@
     </svg>
   </button>
 
-  <!-- Toggle switches for VSCode and MySQL modes -->
-  <div class="toggle-switches">
-    <label class="switch">
-      <input type="checkbox" id="vscode-toggle">
-      <span class="slider-round"></span>
-      <img src="images/vscode.png" class="switch-icon" alt="VS Code Icon">
-    </label>
-    <label class="switch">
-      <input type="checkbox" id="mysql-toggle">
-      <span class="slider-round"></span>
-      <img src="images/sql.png" class="switch-icon mysql-icon" alt="MySQL Icon">
-    </label>
+  <!-- Mode toggles -->
+  <div class="mode-button-container">
+    <button id="mysql-glass-btn" class="glassy-button">
+      <img src="/static/images/sql.png" alt="MySQL Icon">
+      <span></span>
+    </button>
   </div>
 
-  <!-- Sidebar for chat history -->
+  <!-- Sidebar -->
   <div class="hamburger">☰</div>
   <div class="sidebar" id="sidebar">
     <h3>Chat History</h3>
     <div id="chatTabs"></div>
+    <button class="logout-btn-sidebar" onclick="logout()" title="Logout">
+      <i class="fa-solid fa-right-from-bracket logout-icon"></i>
+    </button>
   </div>
 
-  <!-- Main wrapper for chat and controls -->
+  <!-- Main content -->
   <div class="main-wrapper">
     <div class="center-wrapper">
-      <!-- Welcome heading -->
-      <h1 class="greeting">Welcome, Yash</h1>
 
-      <!-- Language selector (Python, SQL, PySpark) -->
+      <!-- 3D Spline Orb -->
+      <div class="orb-wrapper">
+        <spline-viewer
+          url="https://prod.spline.design/nt8kBWcH6rqX7ZGy/scene.splinecode"
+          class="orb"
+        ></spline-viewer>
+      </div>
+
+      <h1 class="greeting" id="greeting">Welcome!</h1>
+
       <div class="segmented-control">
         <input type="radio" name="language" id="lang-python" value="Python" checked>
         <label for="lang-python">Python</label>
@@ -87,16 +94,13 @@
         <div class="slider"></div>
       </div>
 
-      <!-- Chat container for messages, typing indicator, and input -->
       <div class="chat-container">
         <div class="messages" id="messages"></div>
 
-        <!-- Typing animation -->
         <div class="typing-indicator" id="typingIndicator" style="display: none;">
           <span></span><span></span><span></span>
         </div>
 
-        <!-- Input field and buttons -->
         <div class="input-wrapper">
           <input type="text" id="chatInput" placeholder="Ask follow-up..." />
           <button class="icon-btn" onclick="toggleCodeEditor()"><i class="fa-solid fa-code"></i></button>
@@ -106,46 +110,87 @@
     </div>
   </div>
 
-  <!-- Code editor modal window -->
-  <div class="code-editor-modal" id="codeEditorModal">
-    <div class="code-editor-header">
-      <span>Code Editor</span>
-      <div class="editor-actions">
-        <button onclick="minimizeEditor()">−</button>
-        <button onclick="maximizeEditor()">☐</button>
-        <button onclick="toggleCodeEditor()">×</button>
-      </div>
-    </div>
-
-    <!-- Prompt input for the code editor -->
-    <input class="prompt-input" id="promptBox" placeholder="PROMPT" />
-
-    <!-- Code editor split view: input + output -->
-    <div class="editor-code-container">
-      <div style="position: relative; flex: 1;">
-        <div id="inputEditor"></div>
-        <div class="input-buttons">
-          <button class="run-icon-btn" onclick="sendEditorCode()" title="Run Code">
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <button class="copy-btn" onclick="copyInputMonaco()" title="Copy Input">
-            <i class="fa-solid fa-copy"></i>
-          </button>
-        </div>
-      </div>
-      <div style="position: relative; flex: 1;">
-        <div id="outputEditor"></div>
-        <div class="output-buttons">
-          <button class="copy-btn" onclick="copyOutputMonaco()" title="Copy Output">
-            <i class="fa-solid fa-copy"></i>
-          </button>
-        </div>
-      </div>
+  <!-- Code Editor Modal -->
+<div class="code-editor-modal" id="codeEditorModal">
+  <div class="code-editor-header">
+    <span>Code Editor</span>
+    <div class="editor-actions">
+      <button onclick="minimizeEditor()">−</button>
+      <button onclick="maximizeEditor()">☐</button>
+      <button onclick="toggleCodeEditor()">×</button>
     </div>
   </div>
 
-  <!-- Main JS script -->
-  <script src="js/script.js"></script>
+  <!-- Prompt Input -->
+  <input class="prompt-input" id="promptBox" placeholder="PROMPT" />
+
+  <!-- ✅ Use Project Context Checkbox -->
+  <label style="display: flex; align-items: center; gap: 6px; margin: 6px 10px;">
+    <input type="checkbox" id="useProjectContext" checked />
+    <span style="font-size: 14px;">USE PROJECT CONTEXT</span>
+  </label>
+
+  <!-- Editors and Folder Pane -->
+  <div class="editor-code-container">
+    <div style="display: flex; flex: 1; position: relative; gap: 0; margin: 0; padding: 0;">
+      <div id="lhs-pane">
+        <div class="folder-upload">
+          <input type="file" id="folderInput" webkitdirectory directory multiple hidden />
+          <button class="icon-btn-circle" onclick="document.getElementById('folderInput').click()" title="Upload Folder">
+            <i class="fa-solid fa-folder-open"></i>
+          </button>
+        </div>
+        <div id="fileTree"></div>
+      </div>
+
+      <div id="inputEditor" style="flex: 1;"></div>
+
+      <div class="input-buttons">
+        <button class="run-icon-btn" onclick="sendEditorCode()" title="Run Code">
+          <i class="fa-solid fa-play"></i>
+        </button>
+        <button class="copy-btn" onclick="copyInputMonaco()" title="Copy Input">
+          <i class="fa-solid fa-copy"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Output Panel and Thinking Log -->
+    <div class="output-editor-wrapper" style="display: flex; position: relative;">
+      <div style="display: flex; align-items: center; justify-content: center; padding: 10px;">
+        <button class="icon-btn-circle output-middle-btn" onclick="toggleThinkingLog()" title="Show Agent Thinking">
+          <i class="fa-solid fa-brain"></i>
+        </button>
+      </div>
+
+      <div id="outputEditor" style="flex: 1;"></div>
+
+      <div id="thinkingLogModal" class="thinking-log-modal hidden">
+        <div class="thinking-log-header">
+          <span>Agent Thinking Log</span>
+          <button onclick="closeThinkingLog()" class="close-thinking-log">&times;</button>
+        </div>
+        <pre id="thinkingLogContent"></pre>
+      </div>
+
+      <button class="icon-btn-circle output-left-btn" onclick="continueEditing()" title="Continue Editing">
+        &#8592;
+      </button>
+      <button class="icon-btn-circle output-right-btn" onclick="copyOutputMonaco()" title="Copy Output">
+        <i class="fa-solid fa-copy"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="insightTooltip" class="insight-tooltip"></div>
+
+<!-- Scripts -->
+<script src="/static/js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/atom-one-dark.css" />
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.22/build/spline-viewer.js"></script>
 </body>
 </html>
-

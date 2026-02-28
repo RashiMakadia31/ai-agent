@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
  # ✅ switched from GPT to Gemini
 
 class SyntaxValidatorAgent(BaseAgent):
@@ -8,4 +8,4 @@ class SyntaxValidatorAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Check the syntax and structure of the following code:\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ updated call method
+        return call_bedrock(prompt)  # ✅ updated call method

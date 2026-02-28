@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
   # ✅ switched from call_gpt to call_gemini
 
 class QueryOptimizerAgent(BaseAgent):
@@ -8,4 +8,4 @@ class QueryOptimizerAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Optimize the following SQL or PySpark query for performance:\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ updated to use Gemini
+        return call_bedrock(prompt)  # ✅ updated to use Gemini

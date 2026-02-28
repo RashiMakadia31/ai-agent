@@ -1,94 +1,94 @@
 import os
+import json
 import logging
-from dotenv import load_dotenv
-import google.generativeai as genai
+import time
+import boto3
 
-# ✅ Load environment variables from .env file
-load_dotenv()
-
-# ✅ Set up logging
+# Logger setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ✅ Fetch Gemini API key from environment
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    logger.error("❌ GEMINI_API_KEY not found in environment. Check your .env file.")
-    raise EnvironmentError("Missing GEMINI_API_KEY in environment variables.")
+# AWS Config (NO API KEY NEEDED)
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.titan-text-lite-v1")
 
-# ✅ Configure the Gemini API with the key
-genai.configure(api_key=GEMINI_API_KEY)
+# Create Bedrock client (uses EC2 IAM role automatically)
+bedrock = boto3.client(
+    "bedrock-runtime",
+    region_name=AWS_REGION
+)
 
-# ✅ Core function to send a prompt to Gemini and return the response
-def call_gemini(prompt: str, model_name: str = "gemini-1.5-flash", temperature: float = 0.5) -> str:
+# Retry utility
+def _retry_call(func, retries=3, delay=2):
+    for attempt in range(retries):
+        try:
+            return func()
+        except Exception as e:
+            logger.warning(f"⚠️ Bedrock call failed (Attempt {attempt + 1}/{retries}): {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise
+
+# Wrap response in Markdown if it looks like code
+def wrap_markdown(text: str) -> str:
+    code_keywords = ["def ", "SELECT ", "CREATE ", "import ", "if ", "while ", "class ", "try:"]
+    is_code = any(kw in text for kw in code_keywords)
+
+    if is_code:
+        return f"```python\n{text.strip()}\n```"
+    return text.strip()
+
+# Main LLM function
+def call_bedrock(
+    prompt: str,
+    temperature: float = 0.5,
+    max_output_tokens: int = 2000,
+) -> str:
     """
-    Sends a prompt to the Gemini LLM and retrieves its response.
-
-    Args:
-        prompt (str): The input prompt to send.
-        model_name (str): The Gemini model variant to use.
-        temperature (float): Sampling temperature for creativity.
-
-    Returns:
-        str: The LLM-generated response text.
+    Sends a prompt to Amazon Bedrock (Titan model)
     """
-    try:
-        logger.info(f"📤 Sending prompt to Gemini: {prompt[:80]}...")  # Log first 80 chars for brevity
-        model = genai.GenerativeModel(model_name)
 
-        # Send prompt to Gemini
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.GenerationConfig(
-                temperature=temperature
-            )
+    def make_request():
+        logger.info(f"📤 Sending prompt to Bedrock: {prompt[:80]}...")
+
+        body = {
+            "inputText": prompt,
+            "textGenerationConfig": {
+                "maxTokenCount": max_output_tokens,
+                "temperature": temperature,
+                "topP": 0.9
+            }
+        }
+
+        response = bedrock.invoke_model(
+            modelId=BEDROCK_MODEL_ID,
+            body=json.dumps(body)
         )
 
-        if response.parts:
-            # Extract and clean the LLM's output text
-            output = response.text.strip()
-            logger.info("✅ Gemini response received.")
+        result = json.loads(response["body"].read())
 
-            # (Optional) Auto-wrap code if desired — currently commented out
-            # if "```" not in output:
-            #     code_keywords = [
-            #         "def ", "class ", "import ", "print(", "if ", "else:", "elif ", 
-            #         "for ", "while ", "return ", "try:", "except ", "public ", 
-            #         "private ", "void ", "function "
-            #     ]
-            #     if any(kw in output for kw in code_keywords):
-            #         output = f"```python\n{output}\n```"
-
-            return output
+        if "results" in result and len(result["results"]) > 0:
+            output_text = result["results"][0]["outputText"]
+            logger.info("✅ Bedrock response received.")
+            return wrap_markdown(output_text)
         else:
-            # Empty response edge case
-            logger.warning("⚠️ Gemini returned empty response.")
-            return ""
+            logger.warning("⚠️ Bedrock returned empty response.")
+            return "⚠️ Model returned empty response."
 
+    try:
+        return _retry_call(make_request)
     except Exception as e:
-        logger.error(f"❌ Gemini API call failed: {e}")
-        raise RuntimeError("Gemini API call failed")
+        logger.error(f"❌ Bedrock API call failed after retries: {e}")
+        return "❌ Unable to process request at the moment. Please try again later."
 
-# ✅ Wrapper function to prepend specific agent instructions to the prompt
+# Agent-style prompt wrapping
 def agent_response(prompt: str, agent_type: str = "code_reviewer") -> str:
-    """
-    Provides an agent-specific response by modifying the prompt context.
-
-    Args:
-        prompt (str): User's prompt or code to process.
-        agent_type (str): Type of agent (e.g., code_reviewer, code_generator, sql_translator).
-
-    Returns:
-        str: LLM-generated response text.
-    """
-    # Define prefix instructions for different agent types
     prefix_map = {
         "code_reviewer": "Please review the following code:\n",
         "code_generator": "Generate code for the following instruction:\n",
         "sql_translator": "Convert this into an SQL query:\n"
     }
-    # Compose the full prompt
-    full_prompt = prefix_map.get(agent_type, "") + prompt
 
-    # Call Gemini using the composed prompt
-    return call_gemini(full_prompt)
+    full_prompt = prefix_map.get(agent_type, "") + prompt
+    return call_bedrock(full_prompt)

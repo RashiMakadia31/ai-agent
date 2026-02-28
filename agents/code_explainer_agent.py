@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
   # ✅ Updated to use Gemini
 
 class CodeExplainerAgent(BaseAgent):
@@ -8,4 +8,4 @@ class CodeExplainerAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Explain the following code in simple terms:\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ Updated function call
+        return call_bedrock(prompt)  # ✅ Updated function call

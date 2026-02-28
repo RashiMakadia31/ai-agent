@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
  # ✅ Updated import
 
 class CodeCommenterAgent(BaseAgent):
@@ -8,4 +8,4 @@ class CodeCommenterAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Add helpful inline comments to this code:\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ Updated function call
+        return call_bedrock(prompt)  # ✅ Updated function call

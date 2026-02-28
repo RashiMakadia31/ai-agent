@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
   # ✅ switched to Gemini
 
 class SchemaMapperAgent(BaseAgent):
@@ -8,5 +8,5 @@ class SchemaMapperAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Infer and apply PySpark schema for the following data process:\n\n{task_input}"
-        return call_gemini(prompt)  # ✅ replaced call_gpt with call_gemini
+        return call_bedrock(prompt)  # ✅ replaced call_gpt with call_gemini
 
