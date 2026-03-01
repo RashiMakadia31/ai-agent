@@ -1,26 +1,48 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import mysql.connector
+
+try:
+    import mysql.connector as mysql_connector
+    from mysql.connector import Error as MySQLError
+except ModuleNotFoundError:
+    mysql_connector = None
+    MySQLError = Exception
+
 
 router = APIRouter()
+
 
 class MySQLConfig(BaseModel):
     host: str
     user: str
     password: str
     database: str
-    port:int =3306
+    port: int = 3306
+
+
+def _ensure_mysql_connector() -> None:
+    if mysql_connector is None:
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "mysql-connector-python is not installed on the server. "
+                "Install it with: pip install mysql-connector-python"
+            ),
+        )
+
 
 def _format_mysql_schema(config: MySQLConfig) -> str:
+    _ensure_mysql_connector()
+
     connection = None
     cursor = None
     try:
-        connection = mysql.connector.connect(
+        connection = mysql_connector.connect(
             host=config.host,
             user=config.user,
             password=config.password,
             database=config.database,
-            port=config.port
+            port=config.port,
         )
         cursor = connection.cursor()
         cursor.execute(
@@ -47,8 +69,9 @@ def _format_mysql_schema(config: MySQLConfig) -> str:
                     key_label = ", MUL Key"
                 schema_lines.append(f"  - {col_name} ({col_type}{key_label})")
             schema_lines.append("")
+
         return "\n".join(schema_lines).strip()
-    except mysql.connector.Error as e:
+    except MySQLError as e:
         raise HTTPException(status_code=400, detail=f"MySQL Error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Error: {str(e)}")
@@ -58,25 +81,29 @@ def _format_mysql_schema(config: MySQLConfig) -> str:
         if connection and connection.is_connected():
             connection.close()
 
+
 @router.post("/connect-mysql")
 def connect_mysql(config: MySQLConfig):
+    _ensure_mysql_connector()
+
     try:
-        connection = mysql.connector.connect(
+        connection = mysql_connector.connect(
             host=config.host,
             user=config.user,
             password=config.password,
             database=config.database,
-            port=config.port
+            port=config.port,
         )
         if connection.is_connected():
             connection.close()
             return {"status": "success", "message": "Connected to MySQL"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to connect to MySQL")
-    except mysql.connector.Error as e:
+
+        raise HTTPException(status_code=500, detail="Failed to connect to MySQL")
+    except MySQLError as e:
         raise HTTPException(status_code=400, detail=f"MySQL Error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal Error: {str(e)}")
+
 
 @router.post("/connect-and-schema")
 def connect_and_schema(config: MySQLConfig):
@@ -84,5 +111,5 @@ def connect_and_schema(config: MySQLConfig):
     return {
         "status": "success",
         "message": "Connected to MySQL and loaded schema.",
-        "schema": schema
+        "schema": schema,
     }

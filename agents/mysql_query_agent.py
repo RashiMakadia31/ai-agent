@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from services.llm import call_gemini
+from services.llm import call_bedrock
  # ✅ Replace call_gpt with call_gemini
 from services.prompt_templates import get_sql_prompt
 
@@ -78,7 +78,7 @@ class MySQLQueryAgent(BaseAgent):
             )
 
         print("\n🔍 [DEBUG] Prompt being sent to Gemini:\n", task_input, "\n")
-        sql = call_gemini(task_input)
+        sql = call_bedrock(task_input)
 
         if db_cursor:
             try:
@@ -91,7 +91,7 @@ class MySQLQueryAgent(BaseAgent):
                     from services.prompt_templates import get_sql_fix_prompt
                     fix_prompt = get_sql_fix_prompt(nl_prompt, sql, str(e), schema)
                     print("\n🔁 [DEBUG] Sending error + SQL back to Gemini for correction...\n")
-                    fixed_sql = call_gemini(fix_prompt).strip()
+                    fixed_sql = call_bedrock(fix_prompt).strip()
 
                     if "❌" in fixed_sql:
                         return fixed_sql
