@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # AWS Config (NO API KEY NEEDED)
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.titan-text-lite-v1")
+BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.titan-text-express-v1")
 
 # Create Bedrock client (uses EC2 IAM role automatically)
 bedrock = boto3.client(
