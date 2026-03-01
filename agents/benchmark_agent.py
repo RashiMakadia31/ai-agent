@@ -1,6 +1,6 @@
-from agents.base_agent import BaseAgent
-from services.llm import call_bedrock
-  # ✅ Updated from call_gpt to call_gemini
+﻿from agents.base_agent import BaseAgent
+from services.llm import call_gemini
+  # âœ… Updated from call_gpt to call_gemini
 
 class BenchmarkAgent(BaseAgent):
     def __init__(self):
@@ -8,4 +8,5 @@ class BenchmarkAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Benchmark the following code or describe which version is faster and why:\n\n{task_input}"
-        return call_bedrock(prompt)
+        return call_gemini(prompt)
+

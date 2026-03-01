@@ -1,6 +1,6 @@
-from agents.base_agent import BaseAgent
-from services.llm import call_bedrock
- # ✅ Replace call_gpt with call_gemini
+﻿from agents.base_agent import BaseAgent
+from services.llm import call_gemini
+ # âœ… Replace call_gpt with call_gemini
 from services.prompt_templates import get_sql_prompt
 
 class MySQLQueryAgent(BaseAgent):
@@ -20,11 +20,11 @@ class MySQLQueryAgent(BaseAgent):
     #                 "- Use exact names as given (including casing).\n"
     #                 "- If a column or table matches the intent of the user's request, use it.\n"
     #                 "- If nothing matches even semantically, respond with:\n"
-    #                 "  ❌ 'The requested column/table does not exist in the provided schema.'\n\n"
+    #                 "  âŒ 'The requested column/table does not exist in the provided schema.'\n\n"
     #                 "Now generate a MySQL query for the following question:\n" +
     #                 nl_prompt.strip()
     #             )
-    #     print("\n🔍 [DEBUG] Prompt being sent to Gemini:\n", task_input, "\n") 
+    #     print("\nðŸ” [DEBUG] Prompt being sent to Gemini:\n", task_input, "\n") 
     #     sql = call_gemini(task_input)
 
     #     if db_cursor:  # optional runtime SQL validation
@@ -37,21 +37,21 @@ class MySQLQueryAgent(BaseAgent):
     #             if schema and nl_prompt:
     #                 from services.prompt_templates import get_sql_fix_prompt
     #                 fix_prompt = get_sql_fix_prompt(nl_prompt, sql, str(e), schema)
-    #                 print("\n🔁 [DEBUG] Sending error + SQL back to Gemini for correction...\n")
+    #                 print("\nðŸ” [DEBUG] Sending error + SQL back to Gemini for correction...\n")
     #                 # return call_gemini(fix_prompt)
     #                 fixed_sql = call_gemini(fix_prompt).strip()
 
-    #                 # ✅ If Gemini still returns markdown or extra stuff, sanitize it
-    #                 if "❌" in fixed_sql:
+    #                 # âœ… If Gemini still returns markdown or extra stuff, sanitize it
+    #                 if "âŒ" in fixed_sql:
     #                     return fixed_sql  # return the clear error as-is
 
-    #                 # ✅ If response includes a SQL block, extract it
+    #                 # âœ… If response includes a SQL block, extract it
     #                 if fixed_sql.startswith("```"):
     #                     import re
     #                     fixed_sql = re.sub(r"^```(?:sql)?\s*", "", fixed_sql)
     #                     fixed_sql = re.sub(r"\s*```$", "", fixed_sql)
 
-    #                 # ✅ Return clean result (no explanation or comments)
+    #                 # âœ… Return clean result (no explanation or comments)
     #                 return fixed_sql.strip()
 
 
@@ -69,16 +69,16 @@ class MySQLQueryAgent(BaseAgent):
                 "- Use only the tables and columns from the schema above.\n"
                 "- Use exact names as given (including casing).\n"
                 "- Use semantic reasoning. For example:\n"
-                "  'full name' → CustomerName, 'total value' → Amount\n"
+                "  'full name' â†’ CustomerName, 'total value' â†’ Amount\n"
                 "- Prefer the closest semantic match.\n"
                 "- If no semantic match exists, return:\n"
-                "  ❌ 'The requested column/table does not exist in the provided schema.'\n\n"
+                "  âŒ 'The requested column/table does not exist in the provided schema.'\n\n"
                 "Now generate a MySQL query for the following question:\n" +
                 nl_prompt.strip()
             )
 
-        print("\n🔍 [DEBUG] Prompt being sent to Gemini:\n", task_input, "\n")
-        sql = call_bedrock(task_input)
+        print("\nðŸ” [DEBUG] Prompt being sent to Gemini:\n", task_input, "\n")
+        sql = call_gemini(task_input)
 
         if db_cursor:
             try:
@@ -90,10 +90,10 @@ class MySQLQueryAgent(BaseAgent):
                 if schema and nl_prompt:
                     from services.prompt_templates import get_sql_fix_prompt
                     fix_prompt = get_sql_fix_prompt(nl_prompt, sql, str(e), schema)
-                    print("\n🔁 [DEBUG] Sending error + SQL back to Gemini for correction...\n")
-                    fixed_sql = call_bedrock(fix_prompt).strip()
+                    print("\nðŸ” [DEBUG] Sending error + SQL back to Gemini for correction...\n")
+                    fixed_sql = call_gemini(fix_prompt).strip()
 
-                    if "❌" in fixed_sql:
+                    if "âŒ" in fixed_sql:
                         return fixed_sql
 
                     if fixed_sql.startswith("```"):
@@ -104,6 +104,7 @@ class MySQLQueryAgent(BaseAgent):
                     return fixed_sql.strip()
 
         return sql
+
 
 
 

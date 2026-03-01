@@ -1,94 +1,85 @@
-import os
-import json
+﻿import os
 import logging
 import time
-import boto3
+from dotenv import load_dotenv
+import google.generativeai as genai
 
-# Logger setup
+# Load .env from project root (local/dev) and normal environment (EC2/systemd)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+load_dotenv(dotenv_path=os.path.join(project_root, ".env"))
+load_dotenv()
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# AWS Config (NO API KEY NEEDED)
-AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amistral.mistral-7b-instruct-v0:2")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    logger.error("GEMINI_API_KEY not found in environment. Configure it before starting the app.")
+    raise EnvironmentError("Missing GEMINI_API_KEY in environment variables.")
 
-# Create Bedrock client (uses EC2 IAM role automatically)
-bedrock = boto3.client(
-    "bedrock-runtime",
-    region_name=AWS_REGION
-)
+genai.configure(api_key=GEMINI_API_KEY)
+DEFAULT_GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-Pro")
 
-# Retry utility
+
 def _retry_call(func, retries=3, delay=2):
     for attempt in range(retries):
         try:
             return func()
         except Exception as e:
-            logger.warning(f"⚠️ Bedrock call failed (Attempt {attempt + 1}/{retries}): {e}")
+            logger.warning(f"Gemini call failed (Attempt {attempt + 1}/{retries}): {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
             else:
                 raise
 
-# Wrap response in Markdown if it looks like code
+
 def wrap_markdown(text: str) -> str:
     code_keywords = ["def ", "SELECT ", "CREATE ", "import ", "if ", "while ", "class ", "try:"]
     is_code = any(kw in text for kw in code_keywords)
-
     if is_code:
-        return f"```python\n{text.strip()}\n```"
+        return f"```python\\n{text.strip()}\\n```"
     return text.strip()
 
-# Main LLM function
-def call_bedrock(
+
+def call_gemini(
     prompt: str,
+    model_name: str | None = None,
     temperature: float = 0.5,
-    max_output_tokens: int = 2000,
+    max_output_tokens: int = 5000,
 ) -> str:
-    """
-    Sends a prompt to Amazon Bedrock (Titan model)
-    """
+    selected_model = model_name or DEFAULT_GEMINI_MODEL
 
     def make_request():
-        logger.info(f"📤 Sending prompt to Bedrock: {prompt[:80]}...")
+        logger.info(f"Sending prompt to Gemini: {prompt[:80]}...")
+        model = genai.GenerativeModel(selected_model)
 
-        body = {
-            "inputText": prompt,
-            "textGenerationConfig": {
-                "maxTokenCount": max_output_tokens,
-                "temperature": temperature,
-                "topP": 0.9
-            }
-        }
-
-        response = bedrock.invoke_model(
-            modelId=BEDROCK_MODEL_ID,
-            body=json.dumps(body)
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.GenerationConfig(
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+            ),
         )
 
-        result = json.loads(response["body"].read())
+        if hasattr(response, "text") and response.text and response.text.strip():
+            logger.info("Gemini response received.")
+            return wrap_markdown(response.text)
 
-        if "results" in result and len(result["results"]) > 0:
-            output_text = result["results"][0]["outputText"]
-            logger.info("✅ Bedrock response received.")
-            return wrap_markdown(output_text)
-        else:
-            logger.warning("⚠️ Bedrock returned empty response.")
-            return "⚠️ Model returned empty response."
+        logger.warning("Gemini returned empty response.")
+        return "Model returned an empty response."
 
     try:
         return _retry_call(make_request)
     except Exception as e:
-        logger.error(f"❌ Bedrock API call failed after retries: {e}")
-        return "❌ Unable to process request at the moment. Please try again later."
+        logger.error(f"Gemini API call failed after retries: {e}")
+        return "Unable to process request at the moment. Please try again later."
 
-# Agent-style prompt wrapping
+
 def agent_response(prompt: str, agent_type: str = "code_reviewer") -> str:
     prefix_map = {
-        "code_reviewer": "Please review the following code:\n",
-        "code_generator": "Generate code for the following instruction:\n",
-        "sql_translator": "Convert this into an SQL query:\n"
+        "code_reviewer": "Please review the following code:\\n",
+        "code_generator": "Generate code for the following instruction:\\n",
+        "sql_translator": "Convert this into an SQL query:\\n",
     }
-
     full_prompt = prefix_map.get(agent_type, "") + prompt
-    return call_bedrock(full_prompt)
+    return call_gemini(full_prompt)

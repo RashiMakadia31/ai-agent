@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 import asyncio
 from pathlib import Path
@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 from services.mysql_ext import router as mysql_router
-from services.llm import call_bedrock
+from services.llm import call_gemini
 
 # === Include project path ===
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -89,14 +89,14 @@ async def ask_code(file: UploadFile = File(...), prompt: str = Form(...)):
 async def ask_ai_sql(prompt_data: SQLPrompt):
     user_prompt = prompt_data.prompt.strip()
     if not user_prompt:
-        return {"response": "⚠️ Prompt is empty. Please enter a valid question."}
+        return {"response": "âš ï¸ Prompt is empty. Please enter a valid question."}
     try:
         gemini_response = call_gemini(
             f"You are an AI MySQL assistant. Answer the following question based on the schema and database knowledge:\n\n{user_prompt}"
         )
         return {"response": gemini_response.strip()}
     except Exception as e:
-        return {"response": f"❌ Error processing request: {str(e)}"}
+        return {"response": f"âŒ Error processing request: {str(e)}"}
 
 @app.post("/analyze-folder")
 async def analyze_folder(_: FolderAnalysisRequest):
@@ -135,7 +135,7 @@ async def thinking_log():
         remaining_logs = chat_agent.thinking_log[prev_len:]
         for entry in remaining_logs:
             yield f"data: {entry}\n\n"
-        yield "data: ✅ Done\n\n"
+        yield "data: âœ… Done\n\n"
 
     return StreamingResponse(stream(), media_type="text/event-stream")
 
@@ -143,7 +143,7 @@ async def thinking_log():
 # === Health Check ===
 @app.get("/ping")
 def ping():
-    return {"message": "Server is live ✅"}
+    return {"message": "Server is live âœ…"}
 
 # === Frontend Mount ===
 frontend_path = Path(__file__).resolve().parent.parent / "frontend"
@@ -201,3 +201,4 @@ app.add_middleware(
 )
 
 app.add_middleware(SecurityHeadersMiddleware)
+

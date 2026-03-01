@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+﻿from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.llm import call_bedrock
+from services.llm import call_gemini
 from agents.master_agent import MasterAgent
 import logging
 
@@ -50,7 +50,7 @@ async def chat_with_gemini(request: PromptRequest):
     Otherwise, uses the original Gemini logic.
     """
     try:
-        logger.info(f"📥 Prompt: {request.prompt} | Lang: {request.language} | Code size: {len(request.code)} chars")
+        logger.info(f"ðŸ“¥ Prompt: {request.prompt} | Lang: {request.language} | Code size: {len(request.code)} chars")
 
         if request.use_agent:
             # Use MasterAgent for agentic response
@@ -80,12 +80,13 @@ async def chat_with_gemini(request: PromptRequest):
             else:
                 full_prompt = f"Provide a response in {lang} for the following request:\n{request.prompt}"
 
-        logger.info(f"📤 Sending composed prompt to Gemini: {full_prompt[:150]}...")
+        logger.info(f"ðŸ“¤ Sending composed prompt to Gemini: {full_prompt[:150]}...")
 
-        answer = call_bedrock(full_prompt)
+        answer = call_gemini(full_prompt)
         wrapped = auto_wrap_code(answer, lang)
         return PromptResponse(response=wrapped)
 
     except Exception as e:
-        logger.error(f"❌ Gemini chat error: {str(e)}")
+        logger.error(f"âŒ Gemini chat error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get response from Gemini")
+

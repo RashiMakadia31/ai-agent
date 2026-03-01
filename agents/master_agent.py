@@ -1,18 +1,18 @@
-import json
+﻿import json
 import ast
 from difflib import get_close_matches
 from core.agent_store import AGENT_MAP
-from services.llm import call_bedrock
+from services.llm import call_gemini
 
 # === SELF-REVIEW FUNCTION ===
 def self_review_code(code: str, lang: str) -> str:
     review_prompt = f"""
 Review the following {lang.upper()} code for potential issues, anti-patterns, or improvements.
-Explain any risks, inefficiencies, or things that could be better in 1–3 lines:
+Explain any risks, inefficiencies, or things that could be better in 1â€“3 lines:
 
 \"\"\"{code}\"\"\"
 """
-    return call_bedrock(review_prompt).strip()
+    return call_gemini(review_prompt).strip()
 
 
 class MasterAgent:
@@ -33,13 +33,13 @@ User prompt:
 Only return one word from the list.
 """
         try:
-            response = call_bedrock(classify_prompt).strip().lower()
+            response = call_gemini(classify_prompt).strip().lower()
             match = get_close_matches(response, valid_types, n=1, cutoff=0.7)
             selected = match[0] if match else "python"
             self.thinking_log.append(f"Classified the prompt as '{selected}' based on Gemini response '{response}'.")
             return selected
         except Exception as e:
-            self.thinking_log.append(f"❌ Classification failed: {e}. Defaulting to 'python'.")
+            self.thinking_log.append(f"âŒ Classification failed: {e}. Defaulting to 'python'.")
             return "python"
 
     def analyze_user_code_style(self, code: str):
@@ -53,7 +53,7 @@ Analyze the following user code and extract the coding style features like:
 Summarize these patterns in plain text:
 \"\"\"{code}\"\"\"
 """
-        self.user_code_style = call_bedrock(style_prompt).strip()
+        self.user_code_style = call_gemini(style_prompt).strip()
         self.thinking_log.append("Analyzed user code style and saved style preferences.")
 
     def plan_project(self, prompt: str) -> list:
@@ -68,13 +68,13 @@ Prompt:
 \"\"\"{prompt}\"\"\"
 """
         try:
-            raw_response = call_bedrock(planner_prompt)
+            raw_response = call_gemini(planner_prompt)
             modules = ast.literal_eval(raw_response)
             if isinstance(modules, list):
                 self.thinking_log.append(f"Planned the project into modules: {[f for f, _ in modules]}")
                 return modules
         except Exception as e:
-            self.thinking_log.append(f"⚠️ Planning failed: {e}. Using default file 'main.py'.")
+            self.thinking_log.append(f"âš ï¸ Planning failed: {e}. Using default file 'main.py'.")
             return [("main.py", prompt)]
 
     def get_agent_for_task(self, task_description: str) -> str:
@@ -86,7 +86,7 @@ Task:
 \"\"\"{task_description}\"\"\"
 Only return one type.
 """
-        response = call_bedrock(routing_prompt).strip().lower()
+        response = call_gemini(routing_prompt).strip().lower()
         agent = response if response in self.agent_map else "python"
         self.thinking_log.append(f"Selected agent type '{agent}' for task: {task_description}")
         return agent
@@ -102,7 +102,7 @@ Use the user's style:
 Code:
 \"\"\"{code}\"\"\"
 """
-        explanation = call_bedrock(explanation_prompt).strip()
+        explanation = call_gemini(explanation_prompt).strip()
         self.thinking_log.append(f"Generated explanation for `{filename}` in {lang.upper()}.")
         return explanation
 
@@ -122,7 +122,7 @@ The comments should:
 Return the full code with comments:
 \"\"\"{code}\"\"\"
 """
-        commented_code = call_bedrock(comment_prompt).strip()
+        commented_code = call_gemini(comment_prompt).strip()
         self.thinking_log.append(f"Added personalized comments to the {lang.upper()} code.")
         return commented_code
 
@@ -136,20 +136,20 @@ Return the full code with comments:
             ethical_check_prompt = f"""
 You are an AI that strictly evaluates user prompts for safety.
 
-If the following instruction involves illegal activity, unethical behavior, hacking, password cracking, phishing, exploitation, or harmful code — respond with a one-line **refusal** and **brief justification**.
+If the following instruction involves illegal activity, unethical behavior, hacking, password cracking, phishing, exploitation, or harmful code â€” respond with a one-line **refusal** and **brief justification**.
 
 If the prompt is safe and ethical, respond with only: OK
 
 Prompt:
 \"\"\"{prompt}\"\"\"
 """
-            ethical_check_response = call_bedrock(ethical_check_prompt, temperature=0.2).strip().lower()
+            ethical_check_response = call_gemini(ethical_check_prompt, temperature=0.2).strip().lower()
 
             if ethical_check_response != "ok":
                 self.finished = True
-                self.thinking_log.append("🚫 Ethical violation detected. Refused to process.")
+                self.thinking_log.append("ðŸš« Ethical violation detected. Refused to process.")
                 return {
-                    "response": f"❌ {ethical_check_response}",
+                    "response": f"âŒ {ethical_check_response}",
                     "thinking_log": self.thinking_log
                 }
 
@@ -170,7 +170,7 @@ Prompt:
                     nl_prompt=prompt,
                     db_cursor=kwargs.get("db_cursor")
                 )
-                if "❌" in generated_code:
+                if "âŒ" in generated_code:
                     self.finished = True
                     return {
                         "response": generated_code,
@@ -183,9 +183,9 @@ Prompt:
                 }
             except Exception as e:
                 self.finished = True
-                self.thinking_log.append(f"❌ MySQL agent failed: {e}")
+                self.thinking_log.append(f"âŒ MySQL agent failed: {e}")
                 return {
-                    "response": f"❌ MySQL query generation failed: {e}",
+                    "response": f"âŒ MySQL query generation failed: {e}",
                     "thinking_log": self.thinking_log
                 }
 
@@ -194,18 +194,18 @@ Prompt:
             modules = self.plan_project(prompt)
 
             for filename, purpose in modules:
-                task_prompt = f"Write full code for `{filename}` — it should {purpose}"
+                task_prompt = f"Write full code for `{filename}` â€” it should {purpose}"
                 agent_type = self.get_agent_for_task(purpose)
                 agent = self.agent_map.get(agent_type)
 
                 if not agent:
-                    self.thinking_log.append(f"❌ No agent found for type '{agent_type}'. Skipping file `{filename}`.")
+                    self.thinking_log.append(f"âŒ No agent found for type '{agent_type}'. Skipping file `{filename}`.")
                     continue
 
                 raw_code = agent.run(task_prompt).strip()
 
                 review = self_review_code(raw_code, agent_type)
-                self.thinking_log.append(f"🔍 Self-review: {review}")
+                self.thinking_log.append(f"ðŸ” Self-review: {review}")
 
                 commented_code = self.add_personalized_comments(raw_code, agent_type)
                 final_output += f"# === {filename} ===\n{commented_code}\n\n"
@@ -215,16 +215,16 @@ Prompt:
 
             if not agent:
                 self.finished = True
-                self.thinking_log.append(f"❌ No suitable agent found for task type '{task_type}'.")
+                self.thinking_log.append(f"âŒ No suitable agent found for task type '{task_type}'.")
                 return {
-                    "response": "❌ No suitable agent found.",
+                    "response": "âŒ No suitable agent found.",
                     "thinking_log": self.thinking_log
                 }
 
             raw_code = agent.run(prompt).strip()
 
             review = self_review_code(raw_code, task_type)
-            self.thinking_log.append(f"🔍 Self-review: {review}")
+            self.thinking_log.append(f"ðŸ” Self-review: {review}")
 
             commented_code = self.add_personalized_comments(raw_code, task_type)
             final_output += commented_code.strip()
@@ -235,3 +235,4 @@ Prompt:
             "response": final_output,
             "thinking_log": self.thinking_log
         }
+

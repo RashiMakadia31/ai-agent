@@ -1,6 +1,6 @@
-from agents.base_agent import BaseAgent
-from services.llm import call_bedrock
- # ✅ switched to Gemini
+﻿from agents.base_agent import BaseAgent
+from services.llm import call_gemini
+ # âœ… switched to Gemini
 
 class PySparkTransformerAgent(BaseAgent):
     def __init__(self):
@@ -8,4 +8,5 @@ class PySparkTransformerAgent(BaseAgent):
 
     def run(self, task_input: str) -> str:
         prompt = f"Write a PySpark solution for the following:\n\n{task_input}"
-        return call_bedrock(prompt)  # ✅ updated call
+        return call_gemini(prompt)  # âœ… updated call
+
