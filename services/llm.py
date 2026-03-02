@@ -18,7 +18,7 @@ if not GEMINI_API_KEY:
     raise EnvironmentError("Missing GEMINI_API_KEY in environment variables.")
 
 genai.configure(api_key=GEMINI_API_KEY)
-DEFAULT_GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
+DEFAULT_GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 def _retry_call(func, retries=3, delay=2):
